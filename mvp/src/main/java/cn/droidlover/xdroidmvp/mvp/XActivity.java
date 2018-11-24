@@ -21,7 +21,7 @@ import cn.droidlover.xdroidmvp.kit.KnifeKit;
 public abstract class XActivity<P extends IPresent> extends RxAppCompatActivity implements IView<P> {
 
     private VDelegate vDelegate;
-    private P p;
+     private P p;
     protected Activity context;
 
     private RxPermissions rxPermissions;
