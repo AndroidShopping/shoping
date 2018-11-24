@@ -22,10 +22,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
         <activity android:name="comm.shop.shopping.ui.AboutActivity" />
         <activity android:name="comm.shop.shopping.ui.WebActivity" />
+        <activity android:name="comm.shop.shopping.ui.settings.SerialPortPreferences" />
+
+        <service
+            android:name="comm.shop.shopping.service.BanknoteService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

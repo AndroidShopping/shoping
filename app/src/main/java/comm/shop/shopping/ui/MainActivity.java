@@ -14,6 +14,7 @@ import butterknife.BindView;
 import cn.droidlover.xdroidmvp.base.XFragmentAdapter;
 import cn.droidlover.xdroidmvp.shopping.R;
 import cn.droidlover.xdroidmvp.mvp.XActivity;
+import comm.shop.shopping.ui.settings.SerialPortPreferences;
 
 /**
  * Created by wanglei on 2016/12/22.
@@ -49,6 +50,7 @@ public class MainActivity extends XActivity {
         viewPager.setOffscreenPageLimit(3);
 
         tabLayout.setupWithViewPager(viewPager);
+        SerialPortPreferences.start(this);
     }
 
     @Override
