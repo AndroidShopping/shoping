@@ -60,12 +60,10 @@ public class AppKit {
             return true;
         }
         if (mediaType.subtype() != null) {
-            if (mediaType.subtype().equals("json") ||
+            return mediaType.subtype().equals("json") ||
                     mediaType.subtype().equals("xml") ||
                     mediaType.subtype().equals("html") ||
-                    mediaType.subtype().equals("webviewhtml")
-                    )
-                return true;
+                    mediaType.subtype().equals("webviewhtml");
         }
         return false;
     }

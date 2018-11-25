@@ -466,10 +466,8 @@ public class Codec {
          *
          * @param keyMap
          * @return
-         * @throws Exception
          */
-        public static String getPrivateKey(Map<String, Object> keyMap)
-                throws Exception {
+        public static String getPrivateKey(Map<String, Object> keyMap) {
             Key key = (Key) keyMap.get(PRIVATE_KEY);
 
             return BASE64.encodeToString(key.getEncoded());
@@ -480,10 +478,8 @@ public class Codec {
          *
          * @param keyMap
          * @return
-         * @throws Exception
          */
-        public static String getPublicKey(Map<String, Object> keyMap)
-                throws Exception {
+        public static String getPublicKey(Map<String, Object> keyMap) {
             Key key = (Key) keyMap.get(PUBLIC_KEY);
 
             return BASE64.encodeToString(key.getEncoded());

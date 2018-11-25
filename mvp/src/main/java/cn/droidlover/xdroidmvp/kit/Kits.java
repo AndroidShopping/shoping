@@ -203,9 +203,7 @@ public class Kits {
             List<ActivityManager.RunningTaskInfo> taskList = am.getRunningTasks(1);
             if (taskList != null && !taskList.isEmpty()) {
                 ComponentName topActivity = taskList.get(0).topActivity;
-                if (topActivity != null && !topActivity.getPackageName().equals(context.getPackageName())) {
-                    return true;
-                }
+                return topActivity != null && !topActivity.getPackageName().equals(context.getPackageName());
             }
             return false;
         }
@@ -303,7 +301,7 @@ public class Kits {
          */
         public static StringBuilder readFile(String filePath, String charsetName) {
             java.io.File file = new java.io.File(filePath);
-            StringBuilder fileContent = new StringBuilder("");
+            StringBuilder fileContent = new StringBuilder();
             if (file == null || !file.isFile()) {
                 return null;
             }

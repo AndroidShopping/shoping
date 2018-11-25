@@ -87,9 +87,7 @@ public abstract class XListAdapter<T> extends BaseAdapter {
                 && data.size() >= elements.size()) {
 
             for (T element : elements) {
-                if (data.contains(element)) {
-                    data.remove(element);
-                }
+                data.remove(element);
             }
 
             notifyDataSetChanged();

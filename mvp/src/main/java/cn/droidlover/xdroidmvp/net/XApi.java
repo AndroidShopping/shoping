@@ -200,7 +200,7 @@ public class XApi {
             public Publisher<T> apply(Flowable<T> upstream) {
                 return upstream.flatMap(new Function<T, Publisher<T>>() {
                     @Override
-                    public Publisher<T> apply(T model) throws Exception {
+                    public Publisher<T> apply(T model) {
 
                         if (model == null || model.isNull()) {
                             return Flowable.error(new NetError(model.getErrorMsg(), NetError.NoDataError));
