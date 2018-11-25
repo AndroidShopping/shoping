@@ -12,7 +12,6 @@ import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -171,8 +170,6 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         //设置名
         holder.goodsCategoryName.setText(dataList.get(position).getName());
-        //设置说明
-        holder.tvGoodsDescription.setText(dataList.get(position).getIntroduce());
         //设置价格
         holder.tvGoodsPrice.setText("¥"+dataList.get(position).getPrice());
 
@@ -312,10 +309,7 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
 
         public final ImageView ivGoodsImage;
         public final TextView goodsCategoryName;
-        public final TextView tvGoodsDescription;
-        public final LinearLayout goodsInfo;
         public final TextView tvGoodsPrice;
-        public final TextView tvGoodsIntegral;
         public final ImageView ivGoodsMinus;
         public final TextView tvGoodsSelectNum;
         public final ImageView ivGoodsAdd;
@@ -325,10 +319,7 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
             super(root);
             ivGoodsImage = root.findViewById(R.id.ivGoodsImage);
             goodsCategoryName = root.findViewById(R.id.goodsCategoryName);
-            tvGoodsDescription = root.findViewById(R.id.tvGoodsDescription);
-            goodsInfo = root.findViewById(R.id.goodsInfo);
             tvGoodsPrice = root.findViewById(R.id.tvGoodsPrice);
-            tvGoodsIntegral = root.findViewById(R.id.tvGoodsIntegral);
             ivGoodsMinus = root.findViewById(R.id.ivGoodsMinus);
             tvGoodsSelectNum = root.findViewById(R.id.tvGoodsSelectNum);
             ivGoodsAdd = root.findViewById(R.id.ivGoodsAdd);
