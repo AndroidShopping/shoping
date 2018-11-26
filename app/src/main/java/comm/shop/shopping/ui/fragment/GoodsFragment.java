@@ -9,6 +9,8 @@ import android.view.View;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.List;
+
 import butterknife.BindView;
 import cn.droidlover.xdroidmvp.mvp.XLazyFragment;
 import cn.droidlover.xdroidmvp.net.NetError;
@@ -16,6 +18,7 @@ import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.adapter.adapter.PersonAdapter;
 import comm.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
 import comm.shop.shopping.event.GoodsListEvent;
+import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.present.PShopPresenter;
 import comm.shop.shopping.stickyheadergrid.StickyHeaderGridLayoutManager;
@@ -26,7 +29,7 @@ import comm.shop.shopping.utils.ToastUtils;
 /**
  * 商品
  */
-public class GoodsFragment extends XLazyFragment<PShopPresenter> implements PersonAdapter.OnShopCartGoodsChangeListener {
+public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
     @BindView(R.id.goods_category_list)
     RecyclerView mGoodsCateGoryList;
@@ -43,10 +46,16 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> implements Pers
         mGoodsCategoryListAdapter = new RecycleGoodsCategoryListAdapter(shopResult, getActivity());
         mGoodsCateGoryList.setLayoutManager(new LinearLayoutManager(getContext()));
         mGoodsCateGoryList.setAdapter(mGoodsCategoryListAdapter);
+        final List<ShopCategory> data = shopResult.getData();
         mGoodsCategoryListAdapter.setOnItemClickListener(new RecycleGoodsCategoryListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                recyclerView.scrollToPosition(shopResult.getData().size() + position + 2);
+                int count = 0;
+                for (int i = 0; i < position; i++) {
+                    count += data.get(i).getShopItem().size();
+                }
+
+                recyclerView.smoothScrollToPosition(count + 1);
                 mGoodsCategoryListAdapter.setCheckPosition(position);
             }
         });
@@ -58,7 +67,7 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> implements Pers
         personAdapter = new PersonAdapter(getActivity(), shopResult);
         personAdapter.setmActivity(getActivity());
         recyclerView.setAdapter(personAdapter);
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -66,22 +75,18 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> implements Pers
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                for (int i = 0; i < shopResult.getData().size(); i++) {
-                    if (gridLayoutManager.getFirstVisibleHeaderPosition(true) >= shopResult.getData().size()) {
-                        mGoodsCategoryListAdapter.setCheckPosition(i);
-                    }
-                }
+                int firstVisibleHeaderPosition = gridLayoutManager.getFirstVisibleHeaderPosition(true);
+                mGoodsCategoryListAdapter.setCheckPosition(firstVisibleHeaderPosition);
 
             }
         });
+        personAdapter.setOnShopCartGoodsChangeListener(new PersonAdapter.OnShopCartGoodsChangeListener() {
+            @Override
+            public void onNumChange() {
+                mGoodsCategoryListAdapter.notifyDataSetChanged();
+            }
+        });
 
-
-    }
-
-
-    @Override
-    public void onNumChange() {
 
     }
 

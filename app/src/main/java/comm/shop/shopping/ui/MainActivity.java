@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -27,6 +26,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.event.MessageEvent;
+import comm.shop.shopping.ui.fragment.GoodsFragment;
 
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.main_picture_view)
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;//动画层
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
         shopCartNum = findViewById(R.id.shopCartNum);
         totalPrice = findViewById(R.id.totalPrice);
         noShop = findViewById(R.id.noShop);
+        refreshView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GoodsFragment fragment = (GoodsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+                fragment.initData(null);
+            }
+        });
     }
 
 
