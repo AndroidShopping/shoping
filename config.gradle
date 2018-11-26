@@ -1,0 +1,6 @@
+ext {
+    url =
+            [
+                    rap: "http://rap2api.taobao.org/"
+            ]
+}

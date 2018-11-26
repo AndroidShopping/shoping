@@ -2,7 +2,6 @@ package comm.shop.shopping.adapter.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,39 +18,42 @@ import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.entity.GoodsListBean;
 import comm.shop.shopping.event.GoodsListEvent;
 import comm.shop.shopping.event.MessageEvent;
+import comm.shop.shopping.model.ShopCategory;
+import comm.shop.shopping.model.ShopItem;
+import comm.shop.shopping.model.ShopResult;
+import comm.shop.shopping.stickyheadergrid.StickyHeaderGridAdapter;
+import comm.shop.shopping.utils.TextUtils;
 
-public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder> {
+public class PersonAdapter extends StickyHeaderGridAdapter {
 
-    private List<GoodsListBean.DataEntity.GoodscatrgoryEntity.GoodsitemEntity> dataList;
+    private ShopResult shopResult;
     private Context mContext;
-    private int[] goodsNum;
     private int buyNum;
     private int totalPrice;
-    private int[] mSectionIndices;
-    private int[]  mGoodsCategoryBuyNums;
     private Activity mActivity;
     private TextView shopCart;
     private ImageView buyImg;
-    private List<GoodsListBean.DataEntity.GoodscatrgoryEntity> goodscatrgoryEntities;
-    private String[] mSectionLetters;
-    private List<GoodsListBean.DataEntity.GoodscatrgoryEntity.GoodsitemEntity> selectGoods=new ArrayList<>();
-    public PersonAdapter(Context context, List<GoodsListBean.DataEntity.GoodscatrgoryEntity.GoodsitemEntity> items
-            , List<GoodsListBean.DataEntity.GoodscatrgoryEntity> goodscatrgoryEntities) {
+
+    public PersonAdapter(Context context, ShopResult shopResult) {
         this.mContext = context;
-        this.dataList = items;
-        this.goodscatrgoryEntities = goodscatrgoryEntities;
-        initGoodsNum();
-        mSectionIndices = getSectionIndices();
-        mSectionLetters = getSectionLetters();
-        mGoodsCategoryBuyNums = getBuyNums();
+        this.shopResult = shopResult;
         setHasStableIds(true);
+
+    }
+
+    @Override
+    public int getSectionItemCount(int section) {
+        return shopResult.getData().get(section).getShopItem().size();
+    }
+
+    @Override
+    public int getSectionCount() {
+        return shopResult.getData().size();
     }
 
     public void setShopCart(TextView shopCart) {
@@ -61,18 +63,11 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
     public void setmActivity(Activity mActivity) {
         this.mActivity = mActivity;
     }
-    /**
-     * 初始化各个商品的购买数量
-     */
-    private void initGoodsNum() {
-        int leng = dataList.size();
-        goodsNum = new int[leng];
-        for (int i = 0; i < leng; i++) {
-            goodsNum[i] = 0;
-        }
-    }
+
+
     /**
      * 开始动画
+     *
      * @param view
      */
     private void startAnim(View view) {
@@ -82,11 +77,12 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
         view.getLocationInWindow(loc);
         int[] startLocation = new int[2];// 一个整型数组，用来存储按钮的在屏幕的X、Y坐标
         view.getLocationInWindow(startLocation);// 这是获取购买按钮的在屏幕的X、Y坐标（这也是动画开始的坐标）
-        ((comm.shop.shopping.ui.MainActivity)mActivity).setAnim(buyImg, startLocation);// 开始执行动画
+        ((comm.shop.shopping.ui.MainActivity) mActivity).setAnim(buyImg, startLocation);// 开始执行动画
     }
 
     /**
      * 判断商品是否有添加到购物车中
+     *
      * @param i  条目下标
      * @param vh ViewHolder
      */
@@ -100,100 +96,60 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
             vh.ivGoodsMinus.setVisibility(View.VISIBLE);
         }
     }
-    /**
-     * 存放每个组里的添加购物车的数量
-     * @return
-     */
-    public int[] getBuyNums() {
-        int[] letters = new int[goodscatrgoryEntities.size()];
-        for (int i = 0; i < goodscatrgoryEntities.size(); i++) {
-            letters[i] = goodscatrgoryEntities.get(i).getBugNum();
-        }
-        return letters;
-    }
-    /**
-     * 存放每个分组的第一条的ID
-     *
-     * @return
-     */
-    private int[] getSectionIndices() {
-        ArrayList<Integer> sectionIndices = new ArrayList<Integer>();
-        int lastFirstPoi = -1;
-        for (int i = 0; i < dataList.size(); i++) {
-            if (dataList.get(i).getId() != lastFirstPoi) {
-                lastFirstPoi = dataList.get(i).getId();
-                sectionIndices.add(i);
-            }
-        }
-        int[] sections = new int[sectionIndices.size()];
-        for (int i = 0; i < sectionIndices.size(); i++) {
-            sections[i] = sectionIndices.get(i);
-        }
-        return sections;
-    }
-    /**
-     * 填充每一个分组要展现的数据
-     *
-     * @return
-     */
-    private String[] getSectionLetters() {
-        String[] letters = new String[mSectionIndices.length];
-        for (int i = 0; i < mSectionIndices.length; i++) {
-            letters[i] = goodscatrgoryEntities.get(i).getName();
-        }
-        return letters;
+
+
+    @Override
+    public MyHeadViewHolder onCreateHeaderViewHolder(ViewGroup parent, int headerType) {
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_goods_list, parent, false);
+        return new MyHeadViewHolder(itemView);
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_goods_list, viewGroup, false);
+    public ItemViewHolder onCreateItemViewHolder(ViewGroup parent, int itemType) {
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_goods_list, parent, false);
         return new ViewHolder(itemView);
     }
 
     @Override
-    public long getItemId(int position) {
-        return dataList.get(position).hashCode();
+    public void onBindHeaderViewHolder(StickyHeaderGridAdapter.HeaderViewHolder headerViewHolder, int section) {
+        MyHeadViewHolder headerViewHolder1 = (MyHeadViewHolder) headerViewHolder;
+        headerViewHolder1.tvGoodsItemTitle.setText(shopResult.getData().get(section).getName());
+
     }
 
-    public void clear() {
-        mSectionIndices = new int[0];
-        mSectionLetters = new String[0];
-        notifyDataSetChanged();
-    }
 
-    public void restore() {
-        mSectionIndices = getSectionIndices();
-        mSectionLetters = getSectionLetters();
-        notifyDataSetChanged();
-    }
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindItemViewHolder(ItemViewHolder viewHolder, final int section, int offset) {
+        final ViewHolder holder = (ViewHolder) viewHolder;
+
+
+        final ShopItem shopItem = shopResult.getData().get(section).getShopItem().get(offset);
         //设置名
-        holder.goodsCategoryName.setText(dataList.get(position).getName());
+        holder.goodsCategoryName.setText(shopItem.getName());
         //设置价格
-        holder.tvGoodsPrice.setText("¥"+dataList.get(position).getPrice());
+        holder.tvGoodsPrice.setText(String.format(Locale.getDefault(), "%s%d", TextUtils.getString(R.string.mark), shopItem.getPrice()));
 
         RequestOptions requestOptions = new RequestOptions();
         requestOptions.placeholder(R.mipmap.icon_logo_image_default);
         Glide
                 .with(mContext)
                 .applyDefaultRequestOptions(requestOptions)
-                .load(dataList.get(position).getGoodsImgUrl())
+                .load(shopItem.getPicPath())
                 .into(holder.ivGoodsImage);
 
         //通过判别对应位置的数量是否大于0来显示隐藏数量
-        isSelected(goodsNum[position], holder);
-
+        isSelected(shopItem.getBuyCount(), holder);
+        final ShopCategory shopCategory = shopResult.getData().get(section);
         //加号按钮点击
         holder.ivGoodsAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goodsNum[position]++;
-                selectGoods.add(dataList.get(position));
-                mGoodsCategoryBuyNums[dataList.get(position).getId()]++;
+                shopItem.setBuyCount(shopItem.getBuyCount() + 1);
+
+                shopCategory.setBugNum(shopCategory.getBugNum() + 1);
                 buyNum++;
-                totalPrice+=dataList.get(position).getPrice();
-                if (goodsNum[position]<=1) {
+                totalPrice += shopItem.getPrice();
+                if (shopItem.getBuyCount() <= 1) {
                     holder.ivGoodsMinus.setAnimation(getShowAnimation());
                     holder.tvGoodsSelectNum.setAnimation(getShowAnimation());
                     holder.ivGoodsMinus.setVisibility(View.VISIBLE);
@@ -201,9 +157,9 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
                 }
                 startAnim(holder.ivGoodsAdd);
                 changeShopCart();
-                if(mOnGoodsNunChangeListener!=null)
+                if (mOnGoodsNunChangeListener != null)
                     mOnGoodsNunChangeListener.onNumChange();
-                isSelected(goodsNum[position], holder);
+                isSelected(shopItem.getBuyCount(), holder);
 
             }
         });
@@ -211,48 +167,59 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
         holder.ivGoodsMinus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (goodsNum[position] > 0) {
-                    goodsNum[position]--;
-                    selectGoods.remove(dataList.get(position));
-                    mGoodsCategoryBuyNums[dataList.get(position).getId()]--;
-                    isSelected(goodsNum[position], holder);
+                if (shopItem.getBuyCount() > 0) {
+                    shopItem.setBuyCount(shopItem.getBuyCount() - 1);
+                    shopCategory.setBugNum(shopCategory.getBugNum() - 1);
+                    isSelected(shopItem.getBuyCount(), holder);
                     buyNum--;
-                    totalPrice-=dataList.get(position).getPrice();
-                    if (goodsNum[position] <=0) {
+                    totalPrice -= shopItem.getPrice();
+                    if (shopItem.getBuyCount() <= 0) {
                         holder.ivGoodsMinus.setAnimation(getHiddenAnimation());
                         holder.tvGoodsSelectNum.setAnimation(getHiddenAnimation());
                         holder.ivGoodsMinus.setVisibility(View.GONE);
                         holder.tvGoodsSelectNum.setVisibility(View.GONE);
                     }
                     changeShopCart();
-                    if(mOnGoodsNunChangeListener!=null)
+                    if (mOnGoodsNunChangeListener != null)
                         mOnGoodsNunChangeListener.onNumChange();
                 } else {
 
                 }
             }
         });
+
+
     }
 
-    @Override
-    public int getItemCount() {
-        return dataList.size();
+
+
+    public static class MyHeadViewHolder extends HeaderViewHolder {
+        TextView tvGoodsItemTitle;
+
+        public MyHeadViewHolder(View itemView) {
+            super(itemView);
+            tvGoodsItemTitle = itemView.findViewById(R.id.tvGoodsItemTitle);
+        }
     }
+
+
+
     /**
      * 显示减号的动画
+     *
      * @return
      */
-    private Animation getShowAnimation(){
+    private Animation getShowAnimation() {
         AnimationSet set = new AnimationSet(true);
-        RotateAnimation rotate = new RotateAnimation(0,720,RotateAnimation.RELATIVE_TO_SELF,0.5f,RotateAnimation.RELATIVE_TO_SELF,0.5f);
+        RotateAnimation rotate = new RotateAnimation(0, 720, RotateAnimation.RELATIVE_TO_SELF, 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f);
         set.addAnimation(rotate);
         TranslateAnimation translate = new TranslateAnimation(
-                TranslateAnimation.RELATIVE_TO_SELF,2f
-                ,TranslateAnimation.RELATIVE_TO_SELF,0
-                ,TranslateAnimation.RELATIVE_TO_SELF,0
-                ,TranslateAnimation.RELATIVE_TO_SELF,0);
+                TranslateAnimation.RELATIVE_TO_SELF, 2f
+                , TranslateAnimation.RELATIVE_TO_SELF, 0
+                , TranslateAnimation.RELATIVE_TO_SELF, 0
+                , TranslateAnimation.RELATIVE_TO_SELF, 0);
         set.addAnimation(translate);
-        AlphaAnimation alpha = new AlphaAnimation(0,1);
+        AlphaAnimation alpha = new AlphaAnimation(0, 1);
         set.addAnimation(alpha);
         set.setDuration(500);
         return set;
@@ -261,19 +228,20 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
 
     /**
      * 隐藏减号的动画
+     *
      * @return
      */
-    private Animation getHiddenAnimation(){
+    private Animation getHiddenAnimation() {
         AnimationSet set = new AnimationSet(true);
-        RotateAnimation rotate = new RotateAnimation(0,720,RotateAnimation.RELATIVE_TO_SELF,0.5f,RotateAnimation.RELATIVE_TO_SELF,0.5f);
+        RotateAnimation rotate = new RotateAnimation(0, 720, RotateAnimation.RELATIVE_TO_SELF, 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f);
         set.addAnimation(rotate);
         TranslateAnimation translate = new TranslateAnimation(
-                TranslateAnimation.RELATIVE_TO_SELF,0
-                ,TranslateAnimation.RELATIVE_TO_SELF,4f
-                ,TranslateAnimation.RELATIVE_TO_SELF,0
-                ,TranslateAnimation.RELATIVE_TO_SELF,0);
+                TranslateAnimation.RELATIVE_TO_SELF, 0
+                , TranslateAnimation.RELATIVE_TO_SELF, 4f
+                , TranslateAnimation.RELATIVE_TO_SELF, 0
+                , TranslateAnimation.RELATIVE_TO_SELF, 0);
         set.addAnimation(translate);
-        AlphaAnimation alpha = new AlphaAnimation(1,0);
+        AlphaAnimation alpha = new AlphaAnimation(1, 0);
         set.addAnimation(alpha);
         set.setDuration(500);
         return set;
@@ -284,9 +252,9 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
      * 修改购物车状态
      */
     private void changeShopCart() {
-        EventBus.getDefault().post(new MessageEvent(buyNum,totalPrice,selectGoods));
-        EventBus.getDefault().post(new GoodsListEvent(mGoodsCategoryBuyNums));
-        if(shopCart==null)return;
+        EventBus.getDefault().post(new MessageEvent(buyNum, totalPrice, shopResult));
+        EventBus.getDefault().post(new GoodsListEvent(shopResult));
+        if (shopCart == null) return;
         if (buyNum > 0) {
             shopCart.setVisibility(View.VISIBLE);
             shopCart.setText(buyNum + "");
@@ -295,9 +263,10 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
         }
 
     }
+
     private OnShopCartGoodsChangeListener mOnGoodsNunChangeListener = null;
 
-    public void setOnShopCartGoodsChangeListener(OnShopCartGoodsChangeListener e){
+    public void setOnShopCartGoodsChangeListener(OnShopCartGoodsChangeListener e) {
         mOnGoodsNunChangeListener = e;
     }
 
@@ -305,7 +274,7 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
         void onNumChange();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends ItemViewHolder {
 
         public final ImageView ivGoodsImage;
         public final TextView goodsCategoryName;
@@ -326,7 +295,6 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
             this.root = root;
         }
     }
-
 
 
 }

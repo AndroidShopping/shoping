@@ -7,11 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
-import java.util.List;
-
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.entity.GoodsListBean;
+import comm.shop.shopping.model.ShopCategory;
+import comm.shop.shopping.model.ShopResult;
 
 
 /**
@@ -21,17 +19,18 @@ import comm.shop.shopping.entity.GoodsListBean;
 public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<RecycleGoodsCategoryListAdapter.ViewHolder> {
     //当前选中的位置
     private int selectPosition;
-    private List<GoodsListBean.DataEntity.GoodscatrgoryEntity> dataList;
+    private ShopResult shopResult;
     public Context mContext;
-    public RecycleGoodsCategoryListAdapter(List<GoodsListBean.DataEntity.GoodscatrgoryEntity> dataList, Context context) {
-        this.dataList=dataList;
-        this.mContext=context;
+
+    public ShopResult getShopResult() {
+        return shopResult;
     }
 
-    public  void  changeData(List<GoodsListBean.DataEntity.GoodscatrgoryEntity> dataList){
-        this.dataList=dataList;
-        notifyDataSetChanged();
+    public RecycleGoodsCategoryListAdapter(ShopResult shopResult, Context context) {
+        this.shopResult = shopResult;
+        this.mContext = context;
     }
+
 
     @Override
     public RecycleGoodsCategoryListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -43,11 +42,12 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
 
     @Override
     public void onBindViewHolder(RecycleGoodsCategoryListAdapter.ViewHolder holder, final int position) {
-        holder.goodsCategoryName.setText(dataList.get(position).getName());
-        holder.shopCartNum.setText(String.valueOf(dataList.get(position).getBugNum()));
-        if(dataList.get(position).getBugNum()>0){
+        ShopCategory shopCategory = shopResult.getData().get(position);
+        holder.goodsCategoryName.setText(shopCategory.getName());
+        holder.shopCartNum.setText(String.valueOf(shopCategory.getBugNum()));
+        if (shopCategory.getBugNum() > 0) {
             holder.shopCartNum.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             holder.shopCartNum.setVisibility(View.GONE);
         }
 
@@ -63,30 +63,33 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
         holder.root.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mOnItemClickListener!=null){
-                    mOnItemClickListener.onItemClick(view,position);
+                if (mOnItemClickListener != null) {
+                    mOnItemClickListener.onItemClick(view, position);
                 }
             }
         });
 
     }
 
-    public interface OnItemClickListener{
+    public interface OnItemClickListener {
         void onItemClick(View view, int position);
     }
 
     OnItemClickListener mOnItemClickListener;
-    public void setOnItemClickListener(OnItemClickListener mOnItemClickListener){
-        this.mOnItemClickListener=mOnItemClickListener;
+
+    public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+        this.mOnItemClickListener = mOnItemClickListener;
     }
+
     @Override
     public int getItemCount() {
-        return dataList.size();
+        return shopResult.getData().size();
     }
 
 
     /**
      * 设置选中index
+     *
      * @param position
      */
     public void setCheckPosition(int position) {

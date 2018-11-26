@@ -24,6 +24,8 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="17dp"
             android:background="@drawable/refresh"
+            android:drawableLeft="@drawable/refresh_icon"
+            android:drawablePadding="10dp"
             android:paddingLeft="15dp"
             android:paddingTop="5dp"
             android:paddingRight="15dp"

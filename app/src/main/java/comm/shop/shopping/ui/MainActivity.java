@@ -3,11 +3,6 @@ package comm.shop.shopping.ui;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +13,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -26,34 +23,50 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.event.MessageEvent;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView shopCartNum;
-    private TextView totalPrice;
-    private TextView noShop;
-    private RelativeLayout shopCartMain;
+    @BindView(R.id.main_picture_view)
+    ImageView mainPictureView;
+    @BindView(R.id.refresh_view)
+    TextView refreshView;
+    @BindView(R.id.container)
+    FrameLayout container;
+    @BindView(R.id.image)
+    ImageView image;
+    @BindView(R.id.shopCartNum)
+    TextView shopCartNum;
+    @BindView(R.id.totalPrice)
+    TextView totalPrice;
+    @BindView(R.id.noShop)
+    TextView noShop;
+    @BindView(R.id.go_cal)
+    TextView goCal;
+    @BindView(R.id.shopCartMain)
+    RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;//动画层
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         initView();
         setStatusBar();
     }
 
     private void initView() {
-        shopCartMain= findViewById(R.id.shopCartMain);
-        shopCartNum= findViewById(R.id.shopCartNum);
-        totalPrice= findViewById(R.id.totalPrice);
-        noShop= findViewById(R.id.noShop);
+        shopCartMain = findViewById(R.id.shopCartMain);
+        shopCartNum = findViewById(R.id.shopCartNum);
+        totalPrice = findViewById(R.id.totalPrice);
+        noShop = findViewById(R.id.noShop);
     }
 
 
-
-
-     protected void setStatusBar() {
+    protected void setStatusBar() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -64,28 +77,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     /**
      * 添加 或者  删除  商品发送的消息处理
+     *
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
-        if(event!=null){
-            if(event.num>0){
+        if (event != null) {
+            if (event.num > 0) {
                 shopCartNum.setText(String.valueOf(event.num));
                 shopCartNum.setVisibility(View.VISIBLE);
                 totalPrice.setVisibility(View.VISIBLE);
                 noShop.setVisibility(View.GONE);
-            }else{
+                goCal.setEnabled(true);
+            } else {
                 shopCartNum.setVisibility(View.GONE);
                 totalPrice.setVisibility(View.GONE);
                 noShop.setVisibility(View.VISIBLE);
+                goCal.setEnabled(false);
             }
-            totalPrice.setText("¥"+String.valueOf(event.price));
+            totalPrice.setText("¥" + String.valueOf(event.price));
 
-            Log.v("NewTabActivity","添加的数量："+event.goods.size());
         }
 
     }
@@ -93,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 设置动画（点击添加商品）
+     *
      * @param v
      * @param startLocation
      */
@@ -107,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         int endX = 0 - startLocation[0] + 40;// 动画位移的X坐标
         int endY = endLocation[1] - startLocation[1];// 动画位移的y坐标
 
-        TranslateAnimation translateAnimationX = new TranslateAnimation(0,endX, 0, 0);
+        TranslateAnimation translateAnimationX = new TranslateAnimation(0, endX, 0, 0);
         translateAnimationX.setInterpolator(new LinearInterpolator());
         translateAnimationX.setRepeatCount(0);// 动画重复执行的次数
         translateAnimationX.setFillAfter(true);
@@ -146,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 初始化动画图层
+     *
      * @return
      */
     private ViewGroup createAnimLayout() {
@@ -155,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         animLayout.setLayoutParams(lp);
-        animLayout.setId(Integer.MAX_VALUE-1);
+        animLayout.setId(Integer.MAX_VALUE - 1);
         animLayout.setBackgroundResource(android.R.color.transparent);
         rootView.addView(animLayout);
         return animLayout;
@@ -163,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 将View添加到动画图层
+     *
      * @param parent
      * @param view
      * @param location

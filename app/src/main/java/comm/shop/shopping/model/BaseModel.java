@@ -7,16 +7,9 @@ import cn.droidlover.xdroidmvp.net.IModel;
  */
 
 public class BaseModel implements IModel {
-    protected boolean error;
+    protected int status;
+    public String message;
 
-
-    public boolean isError() {
-        return error;
-    }
-
-    public void setError(boolean error) {
-        this.error = error;
-    }
 
     @Override
     public boolean isNull() {
@@ -30,11 +23,27 @@ public class BaseModel implements IModel {
 
     @Override
     public boolean isBizError() {
-        return error;
+        return status != 0;
     }
 
     @Override
     public String getErrorMsg() {
-        return null;
+        return message;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
