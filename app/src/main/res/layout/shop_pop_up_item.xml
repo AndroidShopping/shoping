@@ -3,12 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingLeft="10dp"
     android:paddingTop="15dp"
     android:paddingRight="10dp"
-    android:gravity="center_vertical"
     android:paddingBottom="15dp">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/drawble_red_circle" />
 
     <TextView
         android:id="@+id/name_view"
@@ -26,6 +32,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"
+        android:textColor="#E4001E"
+        android:textStyle="bold"
         tools:text="333222222222222222222222" />
 
 
@@ -52,14 +60,14 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:textSize="20sp"
-            android:visibility="visible" />
+             />
 
         <ImageView
             android:id="@+id/ivGoodsMinus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@mipmap/icon_goods_button_minus_gray"
-            android:visibility="visible" />
+             />
 
     </LinearLayout>
 

@@ -3,7 +3,6 @@ package comm.shop.shopping.ui;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;//动画层
     private GoodsFragment goodsFragment;
+    ShopPopupWindow myFragment;
 
 
     @Override
@@ -60,12 +60,13 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initView();
         setStatusBar();
+        myFragment = new ShopPopupWindow();
         goodsFragment = (GoodsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ShopPopupWindow popupWindow = new ShopPopupWindow(goodsFragment.getResult(), v.getContext());
-                popupWindow.show();
+                myFragment.setShopResult(goodsFragment.getResult());
+                myFragment.showNow(getSupportFragmentManager(), "dialog_show");
             }
         });
     }
