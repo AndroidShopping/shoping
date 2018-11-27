@@ -3,6 +3,7 @@ package comm.shop.shopping.ui;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +26,9 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.event.MessageEvent;
+import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.ui.fragment.GoodsFragment;
+import comm.shop.shopping.utils.TextUtils;
 
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.main_picture_view)
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.shopCartMain)
     RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;//动画层
+    private GoodsFragment goodsFragment;
 
 
     @Override
@@ -57,6 +60,14 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initView();
         setStatusBar();
+        goodsFragment = (GoodsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShopPopupWindow popupWindow = new ShopPopupWindow(goodsFragment.getResult(), v.getContext());
+                popupWindow.show();
+            }
+        });
     }
 
     private void initView() {
@@ -67,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
         refreshView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GoodsFragment fragment = (GoodsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
-                fragment.initData(null);
+                goodsFragment.initData(null);
             }
         });
     }
@@ -91,21 +101,24 @@ public class MainActivity extends AppCompatActivity {
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(MessageEvent event) {
+    public void onMessageEvent(ShopResult event) {
         if (event != null) {
-            if (event.num > 0) {
-                shopCartNum.setText(String.valueOf(event.num));
+            int count = event.getAllSelectCount();
+            if (count > 0) {
+                shopCartNum.setText(String.valueOf(count));
                 shopCartNum.setVisibility(View.VISIBLE);
                 totalPrice.setVisibility(View.VISIBLE);
                 noShop.setVisibility(View.GONE);
                 goCal.setEnabled(true);
+                image.setClickable(true);
             } else {
                 shopCartNum.setVisibility(View.GONE);
                 totalPrice.setVisibility(View.GONE);
                 noShop.setVisibility(View.VISIBLE);
                 goCal.setEnabled(false);
+                image.setClickable(false);
             }
-            totalPrice.setText("¥" + String.valueOf(event.price));
+            totalPrice.setText(TextUtils.getString(R.string.mark) + String.valueOf(event.getAllSelectPrice()));
 
         }
 

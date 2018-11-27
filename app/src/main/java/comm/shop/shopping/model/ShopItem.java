@@ -83,4 +83,8 @@ public class ShopItem {
     public void setUnit(String unit) {
         this.unit = unit;
     }
+
+    public int getAllBuyPrice() {
+        return price * getBuyCount();
+    }
 }

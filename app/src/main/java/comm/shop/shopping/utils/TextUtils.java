@@ -2,6 +2,7 @@ package comm.shop.shopping.utils;
 
 import android.support.annotation.StringRes;
 
+import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.App;
 
 public final class TextUtils {
@@ -14,5 +15,9 @@ public final class TextUtils {
             return true;
         }
         return false;
+    }
+
+    public static String getPriceText(int price) {
+        return getString(R.string.mark) + price;
     }
 }

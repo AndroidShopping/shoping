@@ -8,7 +8,6 @@ public class ShopCategory {
     String description;
     String picPath;
     List<ShopItem> shopItem;
-    int bugNum;
 
     public String getId() {
         return id;
@@ -50,11 +49,12 @@ public class ShopCategory {
         this.shopItem = shopItem;
     }
 
-    public int getBugNum() {
-        return bugNum;
+    public int getBuyGoodCount() {
+        int count = 0;
+        for (ShopItem item : shopItem) {
+            count += item.getBuyCount();
+        }
+        return count;
     }
 
-    public void setBugNum(int bugNum) {
-        this.bugNum = bugNum;
-    }
 }

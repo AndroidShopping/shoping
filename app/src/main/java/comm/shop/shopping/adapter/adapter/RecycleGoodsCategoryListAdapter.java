@@ -44,8 +44,8 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
     public void onBindViewHolder(RecycleGoodsCategoryListAdapter.ViewHolder holder, final int position) {
         ShopCategory shopCategory = shopResult.getData().get(position);
         holder.goodsCategoryName.setText(shopCategory.getName());
-        holder.shopCartNum.setText(String.valueOf(shopCategory.getBugNum()));
-        if (shopCategory.getBugNum() > 0) {
+        holder.shopCartNum.setText(String.valueOf(shopCategory.getBuyGoodCount()));
+        if (shopCategory.getBuyGoodCount() > 0) {
             holder.shopCartNum.setVisibility(View.VISIBLE);
         } else {
             holder.shopCartNum.setVisibility(View.GONE);

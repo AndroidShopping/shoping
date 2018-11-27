@@ -21,25 +21,21 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.Locale;
 
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.event.GoodsListEvent;
-import comm.shop.shopping.event.MessageEvent;
 import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopItem;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.stickyheadergrid.StickyHeaderGridAdapter;
 import comm.shop.shopping.utils.TextUtils;
 
-public class PersonAdapter extends StickyHeaderGridAdapter {
+public class GoodAdapter extends StickyHeaderGridAdapter {
 
     private ShopResult shopResult;
     private Context mContext;
-    private int buyNum;
-    private int totalPrice;
     private Activity mActivity;
     private TextView shopCart;
     private ImageView buyImg;
 
-    public PersonAdapter(Context context, ShopResult shopResult) {
+    public GoodAdapter(Context context, ShopResult shopResult) {
         this.mContext = context;
         this.shopResult = shopResult;
         setHasStableIds(true);
@@ -146,9 +142,6 @@ public class PersonAdapter extends StickyHeaderGridAdapter {
             public void onClick(View v) {
                 shopItem.setBuyCount(shopItem.getBuyCount() + 1);
 
-                shopCategory.setBugNum(shopCategory.getBugNum() + 1);
-                buyNum++;
-                totalPrice += shopItem.getPrice();
                 if (shopItem.getBuyCount() <= 1) {
                     holder.ivGoodsMinus.setAnimation(getShowAnimation());
                     holder.tvGoodsSelectNum.setAnimation(getShowAnimation());
@@ -156,7 +149,7 @@ public class PersonAdapter extends StickyHeaderGridAdapter {
                     holder.tvGoodsSelectNum.setVisibility(View.VISIBLE);
                 }
                 startAnim(holder.ivGoodsAdd);
-                changeShopCart();
+                changeShopCart(shopItem);
                 if (mOnGoodsNunChangeListener != null)
                     mOnGoodsNunChangeListener.onNumChange();
                 isSelected(shopItem.getBuyCount(), holder);
@@ -169,17 +162,14 @@ public class PersonAdapter extends StickyHeaderGridAdapter {
             public void onClick(View v) {
                 if (shopItem.getBuyCount() > 0) {
                     shopItem.setBuyCount(shopItem.getBuyCount() - 1);
-                    shopCategory.setBugNum(shopCategory.getBugNum() - 1);
                     isSelected(shopItem.getBuyCount(), holder);
-                    buyNum--;
-                    totalPrice -= shopItem.getPrice();
                     if (shopItem.getBuyCount() <= 0) {
                         holder.ivGoodsMinus.setAnimation(getHiddenAnimation());
                         holder.tvGoodsSelectNum.setAnimation(getHiddenAnimation());
                         holder.ivGoodsMinus.setVisibility(View.GONE);
                         holder.tvGoodsSelectNum.setVisibility(View.GONE);
                     }
-                    changeShopCart();
+                    changeShopCart(shopItem);
                     if (mOnGoodsNunChangeListener != null)
                         mOnGoodsNunChangeListener.onNumChange();
                 } else {
@@ -192,7 +182,6 @@ public class PersonAdapter extends StickyHeaderGridAdapter {
     }
 
 
-
     public static class MyHeadViewHolder extends HeaderViewHolder {
         TextView tvGoodsItemTitle;
 
@@ -201,7 +190,6 @@ public class PersonAdapter extends StickyHeaderGridAdapter {
             tvGoodsItemTitle = itemView.findViewById(R.id.tvGoodsItemTitle);
         }
     }
-
 
 
     /**
@@ -251,13 +239,12 @@ public class PersonAdapter extends StickyHeaderGridAdapter {
     /**
      * 修改购物车状态
      */
-    private void changeShopCart() {
-        EventBus.getDefault().post(new MessageEvent(buyNum, totalPrice, shopResult));
-        EventBus.getDefault().post(new GoodsListEvent(shopResult));
+    private void changeShopCart(ShopItem shopItem) {
+        EventBus.getDefault().post(shopResult);
         if (shopCart == null) return;
-        if (buyNum > 0) {
+        if (shopItem.getBuyCount() > 0) {
             shopCart.setVisibility(View.VISIBLE);
-            shopCart.setText(buyNum + "");
+            shopCart.setText(shopItem.getBuyCount() + "");
         } else {
             shopCart.setVisibility(View.GONE);
         }

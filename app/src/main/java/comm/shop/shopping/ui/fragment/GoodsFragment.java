@@ -6,6 +6,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.google.gson.Gson;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -15,9 +17,8 @@ import butterknife.BindView;
 import cn.droidlover.xdroidmvp.mvp.XLazyFragment;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.adapter.adapter.PersonAdapter;
+import comm.shop.shopping.adapter.adapter.GoodAdapter;
 import comm.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
-import comm.shop.shopping.event.GoodsListEvent;
 import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.present.PShopPresenter;
@@ -36,9 +37,14 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
     private RecycleGoodsCategoryListAdapter mGoodsCategoryListAdapter;
     @BindView(R.id.goods_recycleView)
     RecyclerView recyclerView;
-    private PersonAdapter personAdapter;
+    private GoodAdapter goodAdapter;
     private StickyHeaderGridLayoutManager gridLayoutManager;
     public static final int DEFAULT_ITEM_INTVEL = 10;
+    private ShopResult result;
+
+    public ShopResult getResult() {
+        return result;
+    }
 
 
     private void initData(final ShopResult shopResult) {
@@ -64,9 +70,9 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.addItemDecoration(new RecyclerItemDecoration(DensityUtil.dp2px(getContext(), DEFAULT_ITEM_INTVEL), 2));
-        personAdapter = new PersonAdapter(getActivity(), shopResult);
-        personAdapter.setmActivity(getActivity());
-        recyclerView.setAdapter(personAdapter);
+        goodAdapter = new GoodAdapter(getActivity(), shopResult);
+        goodAdapter.setmActivity(getActivity());
+        recyclerView.setAdapter(goodAdapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -80,7 +86,7 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
             }
         });
-        personAdapter.setOnShopCartGoodsChangeListener(new PersonAdapter.OnShopCartGoodsChangeListener() {
+        goodAdapter.setOnShopCartGoodsChangeListener(new GoodAdapter.OnShopCartGoodsChangeListener() {
             @Override
             public void onNumChange() {
                 mGoodsCategoryListAdapter.notifyDataSetChanged();
@@ -97,7 +103,7 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(GoodsListEvent event) {
+    public void onMessageEvent(ShopResult event) {
         mGoodsCategoryListAdapter.notifyDataSetChanged();
     }
 
@@ -117,10 +123,394 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
     }
 
     public void showData(ShopResult shopResult) {
+
         if (shopResult.isBizError()) {
             ToastUtils.show(shopResult.getMessage());
             return;
         }
+        Gson gson = new Gson();
+        try {
+            String string = "{\n" +
+                    "  \"status\": 0,\n" +
+                    "  \"message\": \"succes\",\n" +
+                    "  \"data\": [\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶1\",\n" +
+                    "      \"description\": \"奶茶2\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶2\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶3\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶4\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶5\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶6\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶7\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶8\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶9\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶10\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶11\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶12\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶13\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶14\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶15\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"6奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"5奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"4奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"3奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"2奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"1奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"number\": 122,\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+            shopResult = gson.fromJson(string, ShopResult.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.result = shopResult;
         initData(shopResult);
     }
 
