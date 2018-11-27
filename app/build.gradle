@@ -9,15 +9,15 @@ android {
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         versionCode rootProject.ext.android.versionCode
         versionName rootProject.ext.android.versionName
-        ndk {
-            moduleName "serial_port"
-        }
+//        ndk {
+//            moduleName "serial_port"
+//        }
     }
-    externalNativeBuild {
-        ndkBuild {
-            path 'src/main/jni/Android.mk'
-        }
-    }
+//    externalNativeBuild {
+//        ndkBuild {
+//            path 'src/main/jni/Android.mk'
+//        }
+//    }
     buildTypes {
         release {
             minifyEnabled false
