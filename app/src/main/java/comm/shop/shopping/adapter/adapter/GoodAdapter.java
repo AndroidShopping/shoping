@@ -16,11 +16,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
-import org.greenrobot.eventbus.EventBus;
-
 import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopItem;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.stickyheadergrid.StickyHeaderGridAdapter;
@@ -31,7 +28,6 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
     private ShopResult shopResult;
     private Context mContext;
     private Activity mActivity;
-    private TextView shopCart;
     private ImageView buyImg;
 
     public GoodAdapter(Context context, ShopResult shopResult) {
@@ -131,7 +127,6 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
 
         //通过判别对应位置的数量是否大于0来显示隐藏数量
         isSelected(shopItem.getBuyCount(), holder);
-        final ShopCategory shopCategory = shopResult.getData().get(section);
         //加号按钮点击
         holder.ivGoodsAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,10 +140,8 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
                     holder.tvGoodsSelectNum.setVisibility(View.VISIBLE);
                 }
                 startAnim(holder.ivGoodsAdd);
-                changeShopCart(shopItem);
-                if (mOnGoodsNunChangeListener != null)
-                    mOnGoodsNunChangeListener.onNumChange();
                 isSelected(shopItem.getBuyCount(), holder);
+                BusProvider.getBus().post(shopResult);
 
             }
         });
@@ -165,11 +158,7 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
                         holder.ivGoodsMinus.setVisibility(View.GONE);
                         holder.tvGoodsSelectNum.setVisibility(View.GONE);
                     }
-                    changeShopCart(shopItem);
-                    if (mOnGoodsNunChangeListener != null)
-                        mOnGoodsNunChangeListener.onNumChange();
-                } else {
-
+                    BusProvider.getBus().post(shopResult);
                 }
             }
         });
@@ -229,28 +218,6 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         set.addAnimation(alpha);
         set.setDuration(500);
         return set;
-    }
-
-
-    /**
-     * 修改购物车状态
-     */
-    private void changeShopCart(ShopItem shopItem) {
-        BusProvider.getBus().post(shopResult);
-        if (shopCart == null) return;
-        if (shopItem.getBuyCount() > 0) {
-            shopCart.setVisibility(View.VISIBLE);
-            shopCart.setText(shopItem.getBuyCount() + "");
-        } else {
-            shopCart.setVisibility(View.GONE);
-        }
-
-    }
-
-    private OnShopCartGoodsChangeListener mOnGoodsNunChangeListener = null;
-
-    public void setOnShopCartGoodsChangeListener(OnShopCartGoodsChangeListener e) {
-        mOnGoodsNunChangeListener = e;
     }
 
     public interface OnShopCartGoodsChangeListener {

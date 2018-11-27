@@ -90,8 +90,12 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
      * @param position
      */
     public void setCheckPosition(int position) {
+        int previous = this.selectPosition;
         this.selectPosition = position;
-        notifyDataSetChanged();
+        if (position != previous) {
+            notifyItemChanged(position);
+            notifyItemChanged(previous);
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

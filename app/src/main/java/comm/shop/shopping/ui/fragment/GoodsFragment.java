@@ -101,13 +101,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
             }
         });
-        goodAdapter.setOnShopCartGoodsChangeListener(new GoodAdapter.OnShopCartGoodsChangeListener() {
-            @Override
-            public void onNumChange() {
-                mGoodsCategoryListAdapter.notifyDataSetChanged();
-            }
-        });
-
 
     }
 
