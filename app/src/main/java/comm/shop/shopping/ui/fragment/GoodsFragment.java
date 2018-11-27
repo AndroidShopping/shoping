@@ -6,14 +6,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.blankj.rxbus.RxBus;
 import com.google.gson.Gson;
-
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
 import butterknife.BindView;
+import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.mvp.XLazyFragment;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
@@ -46,6 +45,23 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
         return result;
     }
 
+    @Override
+    public boolean useEventBus() {
+        return true;
+    }
+
+    @Override
+    public void bindEvent() {
+        super.bindEvent();
+        BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
+            @Override
+            public void onEvent(ShopResult absEvent) {
+                mGoodsCategoryListAdapter.notifyDataSetChanged();
+                goodAdapter.notifyDataSetChanged();
+            }
+        });
+
+    }
 
     private void initData(final ShopResult shopResult) {
 
@@ -65,7 +81,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                 mGoodsCategoryListAdapter.setCheckPosition(position);
             }
         });
-
         gridLayoutManager = new StickyHeaderGridLayoutManager(2);
 
         recyclerView.setLayoutManager(gridLayoutManager);
@@ -97,15 +112,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
     }
 
 
-    /**
-     * 添加 或者  删除  商品发送的消息处理
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(ShopResult event) {
-        mGoodsCategoryListAdapter.notifyDataSetChanged();
-    }
 
     @Override
     public void initData(Bundle savedInstanceState) {

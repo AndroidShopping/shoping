@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ShopResult extends BaseModel {
 
+    public static final int TAG = 233;
     List<ShopCategory> data;
 
     public int getAllBuyedGoodCount() {
@@ -89,5 +90,10 @@ public class ShopResult extends BaseModel {
         }
         return count;
 
+    }
+
+    @Override
+    public int getTag() {
+        return TAG;
     }
 }

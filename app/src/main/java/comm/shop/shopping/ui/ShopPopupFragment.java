@@ -23,13 +23,14 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopItem;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.utils.TextUtils;
 
-public class ShopPopupWindow extends DialogFragment {
+public class ShopPopupFragment extends DialogFragment {
 
     private ShopResult result;
 
@@ -53,7 +54,7 @@ public class ShopPopupWindow extends DialogFragment {
             @Override
             public void onClick(View v) {
                 result.clearAllSelectItem();
-                EventBus.getDefault().post(result);
+                BusProvider.getBus().post(result);
                 dismiss();
             }
         });
@@ -124,7 +125,7 @@ public class ShopPopupWindow extends DialogFragment {
                 public void onClick(View v) {
                     item.setBuyCount(item.getBuyCount() + 1);
                     notifyDataSetChanged();
-                    EventBus.getDefault().post(shopResult);
+                    BusProvider.getBus().post(shopResult);
                 }
             });
             holder.ivGoodsMinus.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +133,7 @@ public class ShopPopupWindow extends DialogFragment {
                 public void onClick(View v) {
                     item.setBuyCount(item.getBuyCount() - 1);
                     notifyDataSetChanged();
-                    EventBus.getDefault().post(shopResult);
+                    BusProvider.getBus().post(shopResult);
                 }
             });
 

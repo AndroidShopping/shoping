@@ -18,8 +18,7 @@ import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Locale;
-
+import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopItem;
@@ -52,9 +51,6 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         return shopResult.getData().size();
     }
 
-    public void setShopCart(TextView shopCart) {
-        this.shopCart = shopCart;
-    }
 
     public void setmActivity(Activity mActivity) {
         this.mActivity = mActivity;
@@ -123,7 +119,7 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         //设置名
         holder.goodsCategoryName.setText(shopItem.getName());
         //设置价格
-        holder.tvGoodsPrice.setText(String.format(Locale.getDefault(), "%s%d", TextUtils.getString(R.string.mark), shopItem.getPrice()));
+        holder.tvGoodsPrice.setText(TextUtils.getPriceText(shopItem.getPrice()));
 
         RequestOptions requestOptions = new RequestOptions();
         requestOptions.placeholder(R.mipmap.icon_logo_image_default);
@@ -240,7 +236,7 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
      * 修改购物车状态
      */
     private void changeShopCart(ShopItem shopItem) {
-        EventBus.getDefault().post(shopResult);
+        BusProvider.getBus().post(shopResult);
         if (shopCart == null) return;
         if (shopItem.getBuyCount() > 0) {
             shopCart.setVisibility(View.VISIBLE);

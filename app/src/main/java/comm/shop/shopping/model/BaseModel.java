@@ -1,12 +1,13 @@
 package comm.shop.shopping.model;
 
+import cn.droidlover.xdroidmvp.event.IBus;
 import cn.droidlover.xdroidmvp.net.IModel;
 
 /**
  * Created by wanglei on 2016/12/11.
  */
 
-public class BaseModel implements IModel {
+public class BaseModel extends   IBus.AbsEvent implements IModel {
     protected int status;
     public String message;
 
@@ -45,5 +46,10 @@ public class BaseModel implements IModel {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public int getTag() {
+        return 0;
     }
 }

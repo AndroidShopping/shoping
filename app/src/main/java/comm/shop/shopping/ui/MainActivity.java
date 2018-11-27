@@ -18,12 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.blankj.rxbus.RxBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.ui.fragment.GoodsFragment;
@@ -50,23 +49,48 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;//动画层
     private GoodsFragment goodsFragment;
-    ShopPopupWindow myFragment;
+    ShopPopupFragment myFragment;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        BusProvider.getBus().register(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initView();
         setStatusBar();
-        myFragment = new ShopPopupWindow();
+        myFragment = new ShopPopupFragment();
         goodsFragment = (GoodsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 myFragment.setShopResult(goodsFragment.getResult());
                 myFragment.showNow(getSupportFragmentManager(), "dialog_show");
+            }
+        });
+        BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
+            @Override
+            public void onEvent(ShopResult event) {
+                if (event != null) {
+                    int count = event.getAllSelectCount();
+                    if (count > 0) {
+                        shopCartNum.setText(String.valueOf(count));
+                        shopCartNum.setVisibility(View.VISIBLE);
+                        totalPrice.setVisibility(View.VISIBLE);
+                        noShop.setVisibility(View.GONE);
+                        goCal.setEnabled(true);
+                        image.setClickable(true);
+                    } else {
+                        shopCartNum.setVisibility(View.GONE);
+                        totalPrice.setVisibility(View.GONE);
+                        noShop.setVisibility(View.VISIBLE);
+                        goCal.setEnabled(false);
+                        image.setClickable(false);
+                    }
+                    totalPrice.setText(TextUtils.getPriceText(event.getAllSelectPrice()));
+
+                }
             }
         });
     }
@@ -93,36 +117,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
-    }
-
-
-    /**
-     * 添加 或者  删除  商品发送的消息处理
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(ShopResult event) {
-        if (event != null) {
-            int count = event.getAllSelectCount();
-            if (count > 0) {
-                shopCartNum.setText(String.valueOf(count));
-                shopCartNum.setVisibility(View.VISIBLE);
-                totalPrice.setVisibility(View.VISIBLE);
-                noShop.setVisibility(View.GONE);
-                goCal.setEnabled(true);
-                image.setClickable(true);
-            } else {
-                shopCartNum.setVisibility(View.GONE);
-                totalPrice.setVisibility(View.GONE);
-                noShop.setVisibility(View.VISIBLE);
-                goCal.setEnabled(false);
-                image.setClickable(false);
-            }
-            totalPrice.setText(TextUtils.getString(R.string.mark) + String.valueOf(event.getAllSelectPrice()));
-
-        }
-
     }
 
 
@@ -223,12 +217,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
+    protected void onDestroy() {
+        super.onDestroy();
+        BusProvider.getBus().unregister(this);
     }
 }

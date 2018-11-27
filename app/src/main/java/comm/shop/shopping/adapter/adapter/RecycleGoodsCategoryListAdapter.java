@@ -22,10 +22,6 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
     private ShopResult shopResult;
     public Context mContext;
 
-    public ShopResult getShopResult() {
-        return shopResult;
-    }
-
     public RecycleGoodsCategoryListAdapter(ShopResult shopResult, Context context) {
         this.shopResult = shopResult;
         this.mContext = context;
@@ -48,6 +44,7 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
         if (shopCategory.getBuyGoodCount() > 0) {
             holder.shopCartNum.setVisibility(View.VISIBLE);
         } else {
+            holder.shopCartNum.setText("");
             holder.shopCartNum.setVisibility(View.GONE);
         }
 
