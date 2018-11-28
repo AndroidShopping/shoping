@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.blankj.rxbus.RxBus;
@@ -30,7 +31,7 @@ import comm.shop.shopping.utils.ToastUtils;
  * 商品
  */
 public class GoodsFragment extends XLazyFragment<PShopPresenter> {
-
+    public static final String TAG = "GoodsFragment";
     @BindView(R.id.goods_category_list)
     RecyclerView mGoodsCateGoryList;
     private RecycleGoodsCategoryListAdapter mGoodsCategoryListAdapter;
@@ -79,6 +80,7 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
                 recyclerView.smoothScrollToPosition(count + 1);
                 mGoodsCategoryListAdapter.setCheckPosition(position);
+                Log.d(TAG, "onItemClick:position= "+position);
             }
         });
         gridLayoutManager = new StickyHeaderGridLayoutManager(2);
@@ -92,6 +94,7 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
+
             }
 
             @Override

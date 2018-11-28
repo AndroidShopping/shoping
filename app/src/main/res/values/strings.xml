@@ -4,4 +4,8 @@
     <string name="go_caclu">去结算</string>
     <string name="cart_empty">购物车为空</string>
     <string name="clear_shop_cart">清空购物车</string>
+    <string name="title_check">请核对您的订单</string>
+    <string name="go_pay">去支付</string>
+    <string name="title_submit">提交订单</string>
+    <string name="back">返回</string>
 </resources>

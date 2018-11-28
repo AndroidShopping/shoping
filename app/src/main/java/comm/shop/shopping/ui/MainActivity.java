@@ -28,7 +28,7 @@ import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.ui.fragment.GoodsFragment;
 import comm.shop.shopping.utils.TextUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseAcivity {
     @BindView(R.id.main_picture_view)
     ImageView mainPictureView;
     @BindView(R.id.refresh_view)
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.noShop)
     TextView noShop;
     @BindView(R.id.go_cal)
-    TextView goCal;
+    View goCal;
     @BindView(R.id.shopCartMain)
     RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;//动画层
@@ -79,18 +79,24 @@ public class MainActivity extends AppCompatActivity {
                         shopCartNum.setVisibility(View.VISIBLE);
                         totalPrice.setVisibility(View.VISIBLE);
                         noShop.setVisibility(View.GONE);
-                        goCal.setEnabled(true);
+//                        goCal.setEnabled(true);
                         image.setClickable(true);
                     } else {
                         shopCartNum.setVisibility(View.GONE);
                         totalPrice.setVisibility(View.GONE);
                         noShop.setVisibility(View.VISIBLE);
-                        goCal.setEnabled(false);
+//                        goCal.setEnabled(false);
                         image.setClickable(false);
                     }
                     totalPrice.setText(TextUtils.getPriceText(event.getAllSelectPrice()));
 
                 }
+            }
+        });
+        goCal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SubmitActivity.start(MainActivity.this,goodsFragment.getResult());
             }
         });
     }
@@ -223,5 +229,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         BusProvider.getBus().unregister(this);
+    }
+
+    @Override
+    public void initData(Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public int getLayoutId() {
+        return 0;
+    }
+
+    @Override
+    public Object newP() {
+        return null;
     }
 }

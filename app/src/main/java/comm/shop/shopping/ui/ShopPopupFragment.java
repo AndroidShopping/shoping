@@ -89,23 +89,7 @@ public class ShopPopupFragment extends DialogFragment {
             return shopResult.getAllBuyedGoodCount() == 0;
         }
 
-        public ShopItem getItem(int position) {
-            List<ShopCategory> data = shopResult.getData();
-            int count = 0;
-            for (ShopCategory datum : data) {
-                for (ShopItem shopItem : datum.getShopItem()) {
-                    int buyCount = shopItem.getBuyCount();
-                    if (buyCount != 0) {
-                        if (count == position) {
-                            return shopItem;
-                        } else {
-                            count++;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
+
 
         @NonNull
         @Override
@@ -116,7 +100,7 @@ public class ShopPopupFragment extends DialogFragment {
 
         @Override
         public void onBindViewHolder(@NonNull MyHolderView holder, int position) {
-            final ShopItem item = getItem(position);
+            final ShopItem item = shopResult.getItem(position);
             holder.nameView.setText(item.getName());
             holder.moneyView.setText(TextUtils.getPriceText(item.getPrice()));
             holder.tvGoodsSelectNum.setText(item.getBuyCount() + "");

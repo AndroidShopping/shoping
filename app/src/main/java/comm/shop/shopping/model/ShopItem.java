@@ -1,6 +1,11 @@
 package comm.shop.shopping.model;
 
-public class ShopItem {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import comm.shop.shopping.utils.TextUtils;
+
+public class ShopItem implements Parcelable {
     String id;
     int price;
     String name;
@@ -9,15 +14,22 @@ public class ShopItem {
     String picPath;
     int isShelf;
     String unit;
+    String standData;
 
-    int buyCount;
+    public String getStandData() {
+        return "全脂，标准";
+    }
+
+    public void setStandData(String standData) {
+        this.standData = standData;
+    }
 
     public int getBuyCount() {
-        return buyCount;
+        return number;
     }
 
     public void setBuyCount(int buyCount) {
-        this.buyCount = buyCount;
+        this.number = buyCount;
     }
 
     public String getId() {
@@ -86,5 +98,53 @@ public class ShopItem {
 
     public int getAllBuyPrice() {
         return price * getBuyCount();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeInt(this.price);
+        dest.writeString(this.name);
+        dest.writeString(this.description);
+        dest.writeInt(this.number);
+        dest.writeString(this.picPath);
+        dest.writeInt(this.isShelf);
+        dest.writeString(this.unit);
+    }
+
+    public ShopItem() {
+    }
+
+    protected ShopItem(Parcel in) {
+        this.id = in.readString();
+        this.price = in.readInt();
+        this.name = in.readString();
+        this.description = in.readString();
+        this.number = in.readInt();
+        this.picPath = in.readString();
+        this.isShelf = in.readInt();
+        this.unit = in.readString();
+    }
+
+    public static final Parcelable.Creator<ShopItem> CREATOR = new Parcelable.Creator<ShopItem>() {
+        @Override
+        public ShopItem createFromParcel(Parcel source) {
+            return new ShopItem(source);
+        }
+
+        @Override
+        public ShopItem[] newArray(int size) {
+            return new ShopItem[size];
+        }
+    };
+
+    public String formatAllCost() {
+        int allCount = price * number;
+        return TextUtils.getPriceText(allCount);
     }
 }

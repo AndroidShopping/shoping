@@ -5,6 +5,7 @@ import android.content.Context;
 
 import android_serialport_api.SerialPortFinder;
 import android_serialport_api.SerialPortUtil;
+import cn.droidlover.xdroidmvp.net.LogInterceptor;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.net.NetProvider;
 import cn.droidlover.xdroidmvp.net.RequestHandler;
@@ -34,8 +35,56 @@ public class App extends Application {
 //            ICT104.initSerialPort(allDevicesPath[0], SerialPortUtil.DEFAULT_BO_TE, 0);
 //        } else {
 //            ICT104.initSerialPort("/dev/ttyS4", SerialPortUtil.DEFAULT_BO_TE, 0);
-//        }
+//
 
+        XApi.registerProvider(new NetProvider() {
+            @Override
+            public Interceptor[] configInterceptors() {
+                Interceptor[] interceptors = new Interceptor[1];
+                interceptors[0]= new LogInterceptor();
+                return interceptors;
+            }
+
+            @Override
+            public void configHttps(OkHttpClient.Builder builder) {
+
+            }
+
+            @Override
+            public CookieJar configCookie() {
+                return null;
+            }
+
+            @Override
+            public RequestHandler configHandler() {
+                return null;
+            }
+
+            @Override
+            public long configConnectTimeoutMills() {
+                return 10000;
+            }
+
+            @Override
+            public long configReadTimeoutMills() {
+                return 10000;
+            }
+
+            @Override
+            public boolean configLogEnable() {
+                return true;
+            }
+
+            @Override
+            public boolean handleError(NetError error) {
+                return true;
+            }
+
+            @Override
+            public boolean dispatchProgressEnable() {
+                return true;
+            }
+        });
 
     }
 

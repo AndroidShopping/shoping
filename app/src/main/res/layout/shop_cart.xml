@@ -65,7 +65,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:background="#3F3F3F"
-        android:enabled="false"
         android:padding="10dp"
         android:text="@string/go_caclu"
         android:textColor="@color/jie_suan_color"

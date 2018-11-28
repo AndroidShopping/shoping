@@ -17,6 +17,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import cn.droidlover.xdroidmvp.event.BusProvider;
+import cn.droidlover.xdroidmvp.imageloader.ILFactory;
+import cn.droidlover.xdroidmvp.imageloader.ILoader;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.model.ShopItem;
 import comm.shop.shopping.model.ShopResult;
@@ -35,6 +37,11 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         this.shopResult = shopResult;
         setHasStableIds(true);
 
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
@@ -117,13 +124,8 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         //设置价格
         holder.tvGoodsPrice.setText(TextUtils.getPriceText(shopItem.getPrice()));
 
-        RequestOptions requestOptions = new RequestOptions();
-        requestOptions.placeholder(R.mipmap.icon_logo_image_default);
-        Glide
-                .with(mContext)
-                .applyDefaultRequestOptions(requestOptions)
-                .load(shopItem.getPicPath())
-                .into(holder.ivGoodsImage);
+        ILoader.Options options = new ILoader.Options(R.drawable.loading, R.drawable.loading_error);
+        ILFactory.getLoader().loadNet(holder.ivGoodsImage, shopItem.getPicPath(), options);
 
         //通过判别对应位置的数量是否大于0来显示隐藏数量
         isSelected(shopItem.getBuyCount(), holder);
