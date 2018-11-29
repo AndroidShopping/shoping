@@ -29,6 +29,15 @@ import comm.shop.shopping.ui.fragment.GoodsFragment;
 import comm.shop.shopping.utils.TextUtils;
 
 public class MainActivity extends BaseAcivity {
+
+
+//    实现提交订单的页面。内容包括
+//1.页面UI布局，字体和间距与设计稿一致
+//2.实现标题栏的样式和功能，与设计稿一致
+//3.填充购物商品数据
+//4.实现向服务器模拟提交订单的功能。并对服务器返回错误进行处理
+//5.实现点击去购彩按钮的背景图片
+//
     @BindView(R.id.main_picture_view)
     ImageView mainPictureView;
     @BindView(R.id.refresh_view)

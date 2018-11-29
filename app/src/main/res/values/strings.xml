@@ -8,4 +8,7 @@
     <string name="go_pay">去支付</string>
     <string name="title_submit">提交订单</string>
     <string name="back">返回</string>
+    <string name="submit_coin">请投币</string>
+    <string name="submit_coin_down">请在下方投币</string>
+    <string name="confirm">确认</string>
 </resources>

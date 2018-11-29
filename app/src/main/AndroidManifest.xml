@@ -20,7 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="comm.shop.shopping.ui.SubmitActivity"></activity>
+        <activity android:name="comm.shop.shopping.ui.SubmitActivity" />
+        <activity android:name="comm.shop.shopping.ui.SubmitCoinActivity"></activity>
     </application>
 
 </manifest>
