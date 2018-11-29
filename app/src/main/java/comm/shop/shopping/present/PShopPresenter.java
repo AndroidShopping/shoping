@@ -1,12 +1,11 @@
 package comm.shop.shopping.present;
 
-import comm.shop.shopping.model.ShopResult;
-import comm.shop.shopping.net.Api;
-
 import cn.droidlover.xdroidmvp.mvp.XPresent;
 import cn.droidlover.xdroidmvp.net.ApiSubscriber;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.net.XApi;
+import comm.shop.shopping.model.ShopResult;
+import comm.shop.shopping.net.Api;
 import comm.shop.shopping.ui.fragment.GoodsFragment;
 
 /**
@@ -17,6 +16,7 @@ public class PShopPresenter extends XPresent<GoodsFragment> {
 
 
     public void getShopProductList() {
+        getV().onStartLoading();
         Api.getShopService().getShopItemList()
                 .compose(XApi.<ShopResult>getApiTransformer())
                 .compose(XApi.<ShopResult>getScheduler())
@@ -29,7 +29,7 @@ public class PShopPresenter extends XPresent<GoodsFragment> {
 
                     @Override
                     public void onNext(ShopResult shopResult) {
-                        getV().showData( shopResult);
+                        getV().showData(shopResult);
                     }
                 });
     }

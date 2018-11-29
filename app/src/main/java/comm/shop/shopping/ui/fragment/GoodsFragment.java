@@ -109,6 +109,9 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
 
 
+    public void onStartLoading(){
+
+    }
     @Override
     public void initData(Bundle savedInstanceState) {
         getP().getShopProductList();

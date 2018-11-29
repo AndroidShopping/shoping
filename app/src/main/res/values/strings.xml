@@ -16,4 +16,7 @@
     <string name="welcome">欢迎光临百叶村</string>
     <string name="please_take_repay">请取回机器找零</string>
     <string name="on_return_main">正在返回主页</string>
+    <string name="empty_view_hint">暂无数据</string>
+    <string name="error_view_hint">加载失败</string>
+    <string name="no_network_view_hint">网络异常</string>
 </resources>
