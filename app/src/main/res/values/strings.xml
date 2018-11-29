@@ -11,4 +11,9 @@
     <string name="submit_coin">请投币</string>
     <string name="submit_coin_down">请在下方投币</string>
     <string name="confirm">确认</string>
+    <string name="print_order">订单打印</string>
+    <string name="printting">机器正在打印订单，请勿离开</string>
+    <string name="welcome">欢迎光临百叶村</string>
+    <string name="please_take_repay">请取回机器找零</string>
+    <string name="on_return_main">正在返回主页</string>
 </resources>

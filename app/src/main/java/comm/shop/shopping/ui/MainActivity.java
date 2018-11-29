@@ -1,9 +1,10 @@
 package comm.shop.shopping.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -31,7 +32,7 @@ import comm.shop.shopping.utils.TextUtils;
 public class MainActivity extends BaseAcivity {
 
 
-//    实现提交订单的页面。内容包括
+    //    实现提交订单的页面。内容包括
 //1.页面UI布局，字体和间距与设计稿一致
 //2.实现标题栏的样式和功能，与设计稿一致
 //3.填充购物商品数据
@@ -56,10 +57,20 @@ public class MainActivity extends BaseAcivity {
     View goCal;
     @BindView(R.id.shopCartMain)
     RelativeLayout shopCartMain;
-    private ViewGroup anim_mask_layout;//动画层
+    private ViewGroup anim_mask_layout;
     private GoodsFragment goodsFragment;
     ShopPopupFragment myFragment;
 
+    public static void start(Context context) {
+        context.startActivity(new Intent(context, MainActivity.class));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        goodsFragment.refresh();
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +116,7 @@ public class MainActivity extends BaseAcivity {
         goCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SubmitActivity.start(MainActivity.this,goodsFragment.getResult());
+                SubmitActivity.start(MainActivity.this, goodsFragment.getResult());
             }
         });
     }

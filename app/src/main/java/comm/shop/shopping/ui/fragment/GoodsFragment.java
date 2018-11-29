@@ -114,6 +114,10 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
         getP().getShopProductList();
     }
 
+    public void refresh(){
+        getP().getShopProductList();
+    }
+
     @Override
     public int getLayoutId() {
         return R.layout.fragment_goods;
