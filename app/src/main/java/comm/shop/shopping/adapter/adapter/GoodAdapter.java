@@ -13,9 +13,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-
 import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.imageloader.ILFactory;
 import cn.droidlover.xdroidmvp.imageloader.ILoader;
@@ -40,7 +37,6 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
     }
 
 
-
     @Override
     public int getSectionItemCount(int section) {
         return shopResult.getData().get(section).getShopItem().size();
@@ -48,6 +44,9 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
 
     @Override
     public int getSectionCount() {
+        if (shopResult == null) {
+            return 0;
+        }
         return shopResult.getData().size();
     }
 
@@ -167,6 +166,12 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         });
 
 
+    }
+
+    public void updateShopResult(ShopResult shopResult) {
+
+        this.shopResult = shopResult;
+        notifyAllSectionsDataSetChanged();
     }
 
 

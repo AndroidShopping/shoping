@@ -3,8 +3,12 @@ package comm.shop.shopping.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -20,25 +24,28 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.blankj.rxbus.RxBus;
+import com.google.gson.Gson;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.event.BusProvider;
+import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
+import comm.shop.shopping.adapter.adapter.GoodAdapter;
+import comm.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
+import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopResult;
-import comm.shop.shopping.ui.fragment.GoodsFragment;
+import comm.shop.shopping.present.PShopPresenter;
+import comm.shop.shopping.stickyheadergrid.StickyHeaderGridLayoutManager;
+import comm.shop.shopping.utils.DensityUtil;
 import comm.shop.shopping.utils.TextUtils;
+import comm.shop.shopping.utils.ToastUtils;
 
-public class MainActivity extends BaseAcivity {
+public class MainActivity extends BaseAcivity<PShopPresenter> {
 
 
-    //    实现提交订单的页面。内容包括
-//1.页面UI布局，字体和间距与设计稿一致
-//2.实现标题栏的样式和功能，与设计稿一致
-//3.填充购物商品数据
-//4.实现向服务器模拟提交订单的功能。并对服务器返回错误进行处理
-//5.实现点击去购彩按钮的背景图片
-//
     @BindView(R.id.main_picture_view)
     ImageView mainPictureView;
     @BindView(R.id.refresh_view)
@@ -58,33 +65,32 @@ public class MainActivity extends BaseAcivity {
     @BindView(R.id.shopCartMain)
     RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;
-    private GoodsFragment goodsFragment;
     ShopPopupFragment myFragment;
 
-    public static void start(Context context) {
-        context.startActivity(new Intent(context, MainActivity.class));
-    }
+    @BindView(R.id.goods_category_list)
+    RecyclerView mGoodsCateGoryList;
+    private RecycleGoodsCategoryListAdapter mGoodsCategoryListAdapter;
+    @BindView(R.id.goods_recycleView)
+    RecyclerView recyclerView;
+    private GoodAdapter goodAdapter;
+    private StickyHeaderGridLayoutManager gridLayoutManager;
+    public static final int DEFAULT_ITEM_INTVEL = 10;
+    private ShopResult result;
+    private int mIndex;
+    private boolean move;
+    private boolean isMoved;
+    private LinearLayoutManager linearLayoutManager;
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        goodsFragment.refresh();
-
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+    public void initData(Bundle savedInstanceState) {
         initView();
+        initData();
         setStatusBar();
         myFragment = new ShopPopupFragment();
-        goodsFragment = (GoodsFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myFragment.setShopResult(goodsFragment.getResult());
+                myFragment.setShopResult(result);
                 myFragment.showNow(getSupportFragmentManager(), "dialog_show");
             }
         });
@@ -115,10 +121,585 @@ public class MainActivity extends BaseAcivity {
         goCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SubmitActivity.start(MainActivity.this, goodsFragment.getResult());
+                SubmitActivity.start(MainActivity.this, result);
             }
         });
+        getP().getShopProductList();
     }
+
+
+    @Override
+    public void bindEvent() {
+        BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
+            @Override
+            public void onEvent(ShopResult absEvent) {
+                mGoodsCategoryListAdapter.notifyDataSetChanged();
+                goodAdapter.notifyDataSetChanged();
+            }
+        });
+
+    }
+
+    private void initData() {
+
+        mGoodsCategoryListAdapter = new RecycleGoodsCategoryListAdapter(null, this);
+        linearLayoutManager = new LinearLayoutManager(this);
+        mGoodsCateGoryList.setLayoutManager(linearLayoutManager);
+        mGoodsCateGoryList.setAdapter(mGoodsCategoryListAdapter);
+        mGoodsCategoryListAdapter.setOnItemClickListener(new RecycleGoodsCategoryListAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                isMoved = true;
+                int targetPosition = position;
+                setChecked(position, true);
+            }
+        });
+        gridLayoutManager = new StickyHeaderGridLayoutManager(2);
+
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.addItemDecoration(new RecyclerItemDecoration(DensityUtil.dp2px(this, DEFAULT_ITEM_INTVEL), 2));
+        goodAdapter = new GoodAdapter(this, null);
+        goodAdapter.setmActivity(this);
+        recyclerView.setAdapter(goodAdapter);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                int firstVisibleHeaderPosition = gridLayoutManager.getFirstVisibleHeaderPosition(true);
+                mGoodsCategoryListAdapter.setCheckPosition(firstVisibleHeaderPosition);
+
+            }
+        });
+
+
+    }
+
+    private void setChecked(int position, boolean isLeft) {
+        Log.d("p-------->", String.valueOf(position));
+        if (isLeft) {
+            mGoodsCategoryListAdapter.setCheckPosition(position);
+            //此处的位置需要根据每个分类的集合来进行计算
+            int count = 0;
+            for (int i = 0; i < position; i++) {
+                count += result.getData().get(i).getShopItem().size();
+            }
+            count += position;
+            setData(count);
+//            ItemHeaderDecoration.setCurrentTag(String.valueOf(targetPosition));//凡是点击左边，将左边点击的位置作为当前的tag
+        } else {
+            if (isMoved) {
+                isMoved = false;
+            } else {
+                mGoodsCategoryListAdapter.setCheckPosition(position);
+            }
+//            ItemHeaderDecoration.setCurrentTag(String.valueOf(position));//如果是滑动右边联动左边，则按照右边传过来的位置作为tag
+
+        }
+        moveToCenter(position);
+
+    }
+
+    //将当前选中的item居中
+    private void moveToCenter(int position) {
+        //将点击的position转换为当前屏幕上可见的item的位置以便于计算距离顶部的高度，从而进行移动居中
+        View childAt = mGoodsCateGoryList.getChildAt(position - linearLayoutManager.findFirstVisibleItemPosition());
+        if (childAt != null) {
+            int y = (childAt.getTop() - mGoodsCateGoryList.getHeight() / 2);
+            mGoodsCateGoryList.smoothScrollBy(0, y);
+        }
+
+    }
+
+    public void setData(int n) {
+        mIndex = n;
+        recyclerView.stopScroll();
+        smoothMoveToPosition(n);
+    }
+
+    private void smoothMoveToPosition(int n) {
+        int firstItem = gridLayoutManager.getFirstVisibleItemPosition(true);
+        int lastItem = gridLayoutManager.getLastVisibleItemPosition();
+
+        Log.d("first--->", String.valueOf(firstItem));
+        Log.d("last--->", String.valueOf(lastItem));
+        if (n <= firstItem) {
+            recyclerView.scrollToPosition(n);
+        } else if (n <= lastItem) {
+            Log.d("pos---->", String.valueOf(n) + "VS" + firstItem);
+            int top = recyclerView.getChildAt(n - firstItem).getTop();
+            Log.d("top---->", String.valueOf(top));
+            recyclerView.scrollBy(0, top);
+        } else {
+            recyclerView.scrollToPosition(n);
+            move = true;
+        }
+    }
+
+
+    public void onStartLoading() {
+
+    }
+
+
+    public void refresh() {
+        getP().getShopProductList();
+    }
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.activity_main;
+    }
+
+    @Override
+    public PShopPresenter newP() {
+        return new PShopPresenter();
+    }
+
+    public void showData(ShopResult shopResult) {
+
+        if (shopResult.isBizError()) {
+            ToastUtils.show(shopResult.getMessage());
+            return;
+        }
+        Gson gson = new Gson();
+        try {
+            String string = "{\n" +
+                    "  \"status\": 0,\n" +
+                    "  \"message\": \"succes\",\n" +
+                    "  \"data\": [\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶1\",\n" +
+                    "      \"description\": \"奶茶2\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶2\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶3\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶4\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶5\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶6\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶7\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶8\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶9\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶10\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶11\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶12\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶13\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶14\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"id\": 3233,\n" +
+                    "      \"name\": \"奶茶15\",\n" +
+                    "      \"description\": \"奶茶\",\n" +
+                    "      \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "      \"shopItem\": [\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"6奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"5奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"4奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"3奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"2奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"id\": 1,\n" +
+                    "          \"price\": 123,\n" +
+                    "          \"name\": \"1奶茶1\",\n" +
+                    "          \"description\": \"奶茶1\",\n" +
+                    "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
+                    "          \"isShelf\": 1,\n" +
+                    "          \"unit\": \"被\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+            shopResult = gson.fromJson(string, ShopResult.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.result = shopResult;
+        mGoodsCategoryListAdapter.updateShopResult(shopResult);
+        goodAdapter.updateShopResult(shopResult);
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+    public static class RecyclerItemDecoration extends RecyclerView.ItemDecoration {
+        private int itemSpace;
+        private int itemNum;
+
+        /**
+         * @param itemSpace item间隔
+         * @param itemNum   每行item的个数
+         */
+        public RecyclerItemDecoration(int itemSpace, int itemNum) {
+            this.itemSpace = itemSpace;
+            this.itemNum = itemNum;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+            outRect.bottom = itemSpace;
+            outRect.left = itemSpace;
+            if (parent.getChildLayoutPosition(view) % itemNum == 0) {
+                outRect.right = itemSpace;
+            } else {
+            }
+        }
+
+    }
+
+    public void showError(NetError error) {
+        if (error != null) {
+//            switch (error.getType()) {
+//                case NetError.ParseError:
+//                    errorView.setMsg("数据解析异常");
+//                    break;
+//
+//                case NetError.AuthError:
+//                    errorView.setMsg("身份验证异常");
+//                    break;
+//
+//                case NetError.BusinessError:
+//                    errorView.setMsg("业务异常");
+//                    break;
+//
+//                case NetError.NoConnectError:
+//                    errorView.setMsg("网络无连接");
+//                    break;
+//
+//                case NetError.NoDataError:
+//                    errorView.setMsg("数据为空");
+//                    break;
+//
+//                case NetError.OtherError:
+//                    errorView.setMsg("其他异常");
+//                    break;
+//            }
+//            contentLayout.showError();
+        }
+    }
+
+    public static void start(Context context) {
+        context.startActivity(new Intent(context, MainActivity.class));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        refresh();
+
+    }
+
 
     private void initView() {
         shopCartMain = findViewById(R.id.shopCartMain);
@@ -128,7 +709,7 @@ public class MainActivity extends BaseAcivity {
         refreshView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goodsFragment.initData(null);
+                refresh();
             }
         });
     }
@@ -246,22 +827,9 @@ public class MainActivity extends BaseAcivity {
 
 
     @Override
-    public void initData(Bundle savedInstanceState) {
-
-    }
-
-    @Override
     public boolean useEventBus() {
         return true;
     }
 
-    @Override
-    public int getLayoutId() {
-        return 0;
-    }
 
-    @Override
-    public Object newP() {
-        return null;
-    }
 }

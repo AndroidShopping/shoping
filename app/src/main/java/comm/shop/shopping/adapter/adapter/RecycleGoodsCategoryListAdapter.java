@@ -68,6 +68,11 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
 
     }
 
+    public void updateShopResult(ShopResult shopResult) {
+        this.shopResult = shopResult;
+        notifyDataSetChanged();
+    }
+
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
     }
@@ -80,6 +85,9 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
 
     @Override
     public int getItemCount() {
+        if (shopResult == null) {
+            return 0;
+        }
         return shopResult.getData().size();
     }
 

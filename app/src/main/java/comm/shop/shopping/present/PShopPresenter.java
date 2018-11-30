@@ -6,13 +6,9 @@ import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.net.XApi;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.net.Api;
-import comm.shop.shopping.ui.fragment.GoodsFragment;
+import comm.shop.shopping.ui.MainActivity;
 
-/**
- * Created by wanglei on 2016/12/31.
- */
-
-public class PShopPresenter extends XPresent<GoodsFragment> {
+public class PShopPresenter extends XPresent<MainActivity> {
 
 
     public void getShopProductList() {
