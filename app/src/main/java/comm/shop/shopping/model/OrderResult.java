@@ -1,13 +1,13 @@
 package comm.shop.shopping.model;
 
 public class OrderResult extends BaseModel {
-    public String data;
+    private OrderResultInfo data;
 
-    public String getData() {
+    public OrderResultInfo getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(OrderResultInfo data) {
         this.data = data;
     }
 }

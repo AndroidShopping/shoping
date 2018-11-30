@@ -14,7 +14,6 @@ import comm.shop.shopping.ui.fragment.GoodsFragment;
  */
 
 public class PShopPresenter extends XPresent<GoodsFragment> {
-    protected static final int PAGE_SIZE = 10;
 
 
     public void getShopProductList() {

@@ -51,10 +51,13 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         ToastUtils.show(error.getMessage());
     }
 
-    public void showData(OrderResult shopResult) {
+    public void showData(OrderResult orderResult) {
         if (shopResult.isBizError()) {
             ToastUtils.show(shopResult.getErrorMsg());
         } else {
+//            SubmitCoinActivity.start(SubmitActivity.this, shopResult, orderResult.getData().getOrderId());
+            SubmitCoinActivity.start(SubmitActivity.this, shopResult, "3333");
+
 
         }
     }
