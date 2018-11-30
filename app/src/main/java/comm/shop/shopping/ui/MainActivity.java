@@ -75,7 +75,6 @@ public class MainActivity extends BaseAcivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        BusProvider.getBus().register(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initView();
@@ -245,15 +244,15 @@ public class MainActivity extends BaseAcivity {
         super.onStart();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        BusProvider.getBus().unregister(this);
-    }
 
     @Override
     public void initData(Bundle savedInstanceState) {
 
+    }
+
+    @Override
+    public boolean useEventBus() {
+        return true;
     }
 
     @Override

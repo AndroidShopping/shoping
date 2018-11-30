@@ -39,10 +39,7 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
 
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
+
 
     @Override
     public int getSectionItemCount(int section) {
@@ -59,6 +56,10 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         this.mActivity = mActivity;
     }
 
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
 
     /**
      * 开始动画

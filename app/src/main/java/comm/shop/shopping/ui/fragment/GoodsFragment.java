@@ -31,7 +31,7 @@ import comm.shop.shopping.utils.ToastUtils;
  * 商品
  */
 public class GoodsFragment extends XLazyFragment<PShopPresenter> {
-    public static final String TAG = "GoodsFragment";
+
     @BindView(R.id.goods_category_list)
     RecyclerView mGoodsCateGoryList;
     private RecycleGoodsCategoryListAdapter mGoodsCategoryListAdapter;
@@ -41,6 +41,11 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
     private StickyHeaderGridLayoutManager gridLayoutManager;
     public static final int DEFAULT_ITEM_INTVEL = 10;
     private ShopResult result;
+    private int mIndex;
+    private boolean move;
+    private boolean isMoved;
+    private LinearLayoutManager linearLayoutManager;
+    private int targetPosition;
 
     public ShopResult getResult() {
         return result;
@@ -53,7 +58,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
     @Override
     public void bindEvent() {
-        super.bindEvent();
         BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
             @Override
             public void onEvent(ShopResult absEvent) {
@@ -67,20 +71,16 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
     private void initData(final ShopResult shopResult) {
 
         mGoodsCategoryListAdapter = new RecycleGoodsCategoryListAdapter(shopResult, getActivity());
-        mGoodsCateGoryList.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        mGoodsCateGoryList.setLayoutManager(linearLayoutManager);
         mGoodsCateGoryList.setAdapter(mGoodsCategoryListAdapter);
         final List<ShopCategory> data = shopResult.getData();
         mGoodsCategoryListAdapter.setOnItemClickListener(new RecycleGoodsCategoryListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                int count = 0;
-                for (int i = 0; i < position; i++) {
-                    count += data.get(i).getShopItem().size();
-                }
-
-                recyclerView.smoothScrollToPosition(count + 1);
-                mGoodsCategoryListAdapter.setCheckPosition(position);
-                Log.d(TAG, "onItemClick:position= "+position);
+                isMoved = true;
+                targetPosition = position;
+                setChecked(position, true);
             }
         });
         gridLayoutManager = new StickyHeaderGridLayoutManager(2);
@@ -94,7 +94,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-
             }
 
             @Override
@@ -107,6 +106,66 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
 
     }
 
+    private void setChecked(int position, boolean isLeft) {
+        Log.d("p-------->", String.valueOf(position));
+        if (isLeft) {
+            mGoodsCategoryListAdapter.setCheckPosition(position);
+            //此处的位置需要根据每个分类的集合来进行计算
+            int count = 0;
+            for (int i = 0; i < position; i++) {
+                count += result.getData().get(i).getShopItem().size();
+            }
+            count += position;
+            setData(count);
+//            ItemHeaderDecoration.setCurrentTag(String.valueOf(targetPosition));//凡是点击左边，将左边点击的位置作为当前的tag
+        } else {
+            if (isMoved) {
+                isMoved = false;
+            } else {
+                mGoodsCategoryListAdapter.setCheckPosition(position);
+            }
+//            ItemHeaderDecoration.setCurrentTag(String.valueOf(position));//如果是滑动右边联动左边，则按照右边传过来的位置作为tag
+
+        }
+        moveToCenter(position);
+
+    }
+
+    //将当前选中的item居中
+    private void moveToCenter(int position) {
+        //将点击的position转换为当前屏幕上可见的item的位置以便于计算距离顶部的高度，从而进行移动居中
+        View childAt = mGoodsCateGoryList.getChildAt(position - linearLayoutManager.findFirstVisibleItemPosition());
+        if (childAt != null) {
+            int y = (childAt.getTop() - mGoodsCateGoryList.getHeight() / 2);
+            mGoodsCateGoryList.smoothScrollBy(0, y);
+        }
+
+    }
+
+    public void setData(int n) {
+        mIndex = n;
+        recyclerView.stopScroll();
+        smoothMoveToPosition(n);
+    }
+
+    private void smoothMoveToPosition(int n) {
+        int firstItem = gridLayoutManager.getFirstVisibleItemPosition(true);
+        int lastItem = gridLayoutManager.getLastVisibleItemPosition();
+
+        Log.d("first--->", String.valueOf(firstItem));
+        Log.d("last--->", String.valueOf(lastItem));
+        if (n <= firstItem) {
+            recyclerView.scrollToPosition(n);
+        } else if (n <= lastItem) {
+            Log.d("pos---->", String.valueOf(n) + "VS" + firstItem);
+            int top = recyclerView.getChildAt(n - firstItem).getTop();
+            Log.d("top---->", String.valueOf(top));
+            recyclerView.scrollBy(0, top);
+        } else {
+            recyclerView.scrollToPosition(n);
+            move = true;
+        }
+    }
 
 
     public void onStartLoading(){
@@ -154,7 +213,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -164,7 +222,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -174,7 +231,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -184,7 +240,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -202,7 +257,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -220,7 +274,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -238,7 +291,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -256,7 +308,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -274,7 +325,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -292,7 +342,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -310,7 +359,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -328,7 +376,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -346,7 +393,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -364,7 +410,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -382,7 +427,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -400,7 +444,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -418,7 +461,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -436,7 +478,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -446,7 +487,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"6奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -456,7 +496,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -466,7 +505,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"5奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -476,7 +514,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"4奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -486,7 +523,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"3奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -496,7 +532,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"2奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
@@ -506,7 +541,6 @@ public class GoodsFragment extends XLazyFragment<PShopPresenter> {
                     "          \"price\": 123,\n" +
                     "          \"name\": \"1奶茶1\",\n" +
                     "          \"description\": \"奶茶1\",\n" +
-                    "          \"number\": 122,\n" +
                     "          \"picPath\": \"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1543242177152&di=4f794bbf5417d119e6e33a3cbfd26b82&imgtype=0&src=http%3A%2F%2Fpic2.16pic.com%2F00%2F15%2F31%2F16pic_1531045_b.jpg\",\n" +
                     "          \"isShelf\": 1,\n" +
                     "          \"unit\": \"被\"\n" +
