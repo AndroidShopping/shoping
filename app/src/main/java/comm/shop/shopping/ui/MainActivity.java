@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -36,6 +37,7 @@ import comm.shop.shopping.stickyheadergrid.StickyHeaderGridLayoutManager;
 import comm.shop.shopping.utils.DensityUtil;
 import comm.shop.shopping.utils.TextUtils;
 import comm.shop.shopping.utils.ToastUtils;
+import comm.shop.shopping.widget.MyDividerItemDecoration;
 
 public class MainActivity extends BaseAcivity<PShopPresenter> {
 
@@ -128,91 +130,113 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         linearLayoutManager = new LinearLayoutManager(this);
         mGoodsCateGoryList.setLayoutManager(linearLayoutManager);
         mGoodsCateGoryList.setAdapter(mGoodsCategoryListAdapter);
+        mGoodsCateGoryList.addItemDecoration(new MyDividerItemDecoration(this));
+        mGoodsCateGoryList.setItemAnimator(new DefaultItemAnimator());
         mGoodsCategoryListAdapter.setOnItemClickListener(new RecycleGoodsCategoryListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
                 isMoved = true;
-                int targetPosition = position;
                 setChecked(position, true);
             }
         });
         gridLayoutManager = new StickyHeaderGridLayoutManager(2);
+        gridLayoutManager.setHeaderStateChangeListener(new StickyHeaderGridLayoutManager.HeaderStateChangeListener() {
+            @Override
+            public void onHeaderStateChanged(int section, View headerView, StickyHeaderGridLayoutManager.HeaderState state, int pushOffset) {
+                if (state == StickyHeaderGridLayoutManager.HeaderState.STICKY) {
 
+                    setChecked(section, false);
+                }
+            }
+        });
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.addItemDecoration(new RecyclerItemDecoration(DensityUtil.dp2px(this, DEFAULT_ITEM_INTVEL), 2));
         goodAdapter = new GoodAdapter(this, null);
         recyclerView.setAdapter(goodAdapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
+
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                int firstVisibleHeaderPosition = gridLayoutManager.getFirstVisibleHeaderPosition(true);
-                mGoodsCategoryListAdapter.setCheckPosition(firstVisibleHeaderPosition);
+                super.onScrolled(recyclerView, dx, dy);
+                if (move) {
+                    move = false;
+                    int n = mIndex - gridLayoutManager.getFirstVisibleHeaderPosition(false);
+                    if (0 <= n && n < recyclerView.getChildCount()) {
+                        int top = recyclerView.getChildAt(n).getTop();
+                        recyclerView.scrollBy(0, top);
+                    }
+                }
 
+
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (move && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    move = false;
+                    int n = mIndex - gridLayoutManager.getFirstVisibleHeaderPosition(false);
+                    if (0 <= n && n < recyclerView.getChildCount()) {
+                        int top = recyclerView.getChildAt(n).getTop();
+                        recyclerView.smoothScrollBy(0, top);
+                    }
+
+                }
             }
         });
 
 
     }
 
+
     private void setChecked(int position, boolean isLeft) {
-        Log.d("p-------->", String.valueOf(position));
+        int counts = 0;
+        for (int i = 0; i < position; i++) {
+            counts += result.getData().get(i).getShopItem().size();
+        }
+
         if (isLeft) {
             mGoodsCategoryListAdapter.setCheckPosition(position);
-            //此处的位置需要根据每个分类的集合来进行计算
-            int count = 0;
-            for (int i = 0; i < position; i++) {
-                count += result.getData().get(i).getShopItem().size();
-            }
-            count += position;
-            setData(count);
-//            ItemHeaderDecoration.setCurrentTag(String.valueOf(targetPosition));//凡是点击左边，将左边点击的位置作为当前的tag
+            counts += position;
+            smoothMoveToPosition(counts);
+            moveToCenter(position);
         } else {
-            if (isMoved) {
-                isMoved = false;
-            } else {
-                mGoodsCategoryListAdapter.setCheckPosition(position);
-            }
-//            ItemHeaderDecoration.setCurrentTag(String.valueOf(position));//如果是滑动右边联动左边，则按照右边传过来的位置作为tag
-
+            mGoodsCategoryListAdapter.setCheckPosition(position);
+            moveToCenter(position);
         }
-        moveToCenter(position);
+
 
     }
 
     //将当前选中的item居中
     private void moveToCenter(int position) {
         //将点击的position转换为当前屏幕上可见的item的位置以便于计算距离顶部的高度，从而进行移动居中
-        View childAt = mGoodsCateGoryList.getChildAt(position - linearLayoutManager.findFirstVisibleItemPosition());
-        if (childAt != null) {
-            int y = (childAt.getTop() - mGoodsCateGoryList.getHeight() / 2);
+        int itemPosition=position-linearLayoutManager.findFirstVisibleItemPosition();
+        /*
+        当往上滑动太快，会出现itemPosition为-1的情况。做下判断
+         */
+        if (0<itemPosition&&itemPosition<linearLayoutManager.getChildCount())
+        {
+            View childAt = mGoodsCateGoryList.getChildAt(position - linearLayoutManager.findFirstVisibleItemPosition());
+            int y = (childAt.getTop() - linearLayoutManager.getHeight() / 2);
             mGoodsCateGoryList.smoothScrollBy(0, y);
         }
 
+
     }
 
-    public void setData(int n) {
-        mIndex = n;
-        recyclerView.stopScroll();
-        smoothMoveToPosition(n);
-    }
 
     private void smoothMoveToPosition(int n) {
+        mIndex = n;
+        recyclerView.stopScroll();
         int firstItem = gridLayoutManager.getFirstVisibleItemPosition(true);
         int lastItem = gridLayoutManager.getLastVisibleItemPosition();
 
-        Log.d("first--->", String.valueOf(firstItem));
-        Log.d("last--->", String.valueOf(lastItem));
         if (n <= firstItem) {
             recyclerView.scrollToPosition(n);
         } else if (n <= lastItem) {
-            Log.d("pos---->", String.valueOf(n) + "VS" + firstItem);
             int top = recyclerView.getChildAt(n - firstItem).getTop();
-            Log.d("top---->", String.valueOf(top));
             recyclerView.scrollBy(0, top);
         } else {
             recyclerView.scrollToPosition(n);
