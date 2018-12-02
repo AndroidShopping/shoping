@@ -1,7 +1,5 @@
 package comm.shop.shopping.adapter.adapter;
 
-import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,16 +18,16 @@ import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.model.ShopItem;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.stickyheadergrid.StickyHeaderGridAdapter;
+import comm.shop.shopping.ui.MainActivity;
 import comm.shop.shopping.utils.TextUtils;
 
 public class GoodAdapter extends StickyHeaderGridAdapter {
 
     private ShopResult shopResult;
-    private Context mContext;
-    private Activity mActivity;
+    private MainActivity mContext;
     private ImageView buyImg;
 
-    public GoodAdapter(Context context, ShopResult shopResult) {
+    public GoodAdapter(MainActivity context, ShopResult shopResult) {
         this.mContext = context;
         this.shopResult = shopResult;
         setHasStableIds(true);
@@ -51,10 +49,6 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
     }
 
 
-    public void setmActivity(Activity mActivity) {
-        this.mActivity = mActivity;
-    }
-
     @Override
     public long getItemId(int position) {
         return position;
@@ -66,13 +60,13 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
      * @param view
      */
     private void startAnim(View view) {
-        buyImg = new ImageView(mActivity);
+        buyImg = new ImageView(mContext);
         buyImg.setBackgroundResource(R.mipmap.icon_goods_add_item);// 设置buyImg的图片
         int[] loc = new int[2];
         view.getLocationInWindow(loc);
         int[] startLocation = new int[2];// 一个整型数组，用来存储按钮的在屏幕的X、Y坐标
         view.getLocationInWindow(startLocation);// 这是获取购买按钮的在屏幕的X、Y坐标（这也是动画开始的坐标）
-        ((comm.shop.shopping.ui.MainActivity) mActivity).setAnim(buyImg, startLocation);// 开始执行动画
+        mContext.setAnim(buyImg, startLocation);// 开始执行动画
     }
 
     /**
@@ -143,7 +137,7 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
                 }
                 startAnim(holder.ivGoodsAdd);
                 isSelected(shopItem.getBuyCount(), holder);
-                BusProvider.getBus().post(shopResult);
+                mContext.onEvent(shopResult);
 
             }
         });
@@ -160,7 +154,7 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
                         holder.ivGoodsMinus.setVisibility(View.GONE);
                         holder.tvGoodsSelectNum.setVisibility(View.GONE);
                     }
-                    BusProvider.getBus().post(shopResult);
+                    mContext.onEvent(shopResult);
                 }
             }
         });

@@ -23,11 +23,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.blankj.rxbus.RxBus;
 import com.google.gson.Gson;
 
 import butterknife.BindView;
-import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.adapter.adapter.GoodAdapter;
@@ -82,7 +80,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         initView();
         initData();
         setStatusBar();
-        myFragment = new ShopPopupFragment();
+        myFragment = new ShopPopupFragment(this);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,40 +98,32 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         getP().getShopProductList();
     }
 
+    public void onEvent(ShopResult event) {
+        mGoodsCategoryListAdapter.notifyDataSetChanged();
+        goodAdapter.notifyDataSetChanged();
 
-    @Override
-    public void bindEvent() {
-        BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
-            @Override
-            public void onEvent(ShopResult event) {
-                mGoodsCategoryListAdapter.notifyDataSetChanged();
-                goodAdapter.notifyDataSetChanged();
-
-                if (event != null) {
-                    int count = event.getAllSelectCount();
-                    if (count > 0) {
-                        shopCartNum.setText(String.valueOf(count));
-                        shopCartNum.setVisibility(View.VISIBLE);
-                        totalPrice.setVisibility(View.VISIBLE);
-                        noShop.setVisibility(View.GONE);
-//                        goCal.setEnabled(true);
-                        image.setClickable(true);
-                    } else {
-                        shopCartNum.setVisibility(View.GONE);
-                        totalPrice.setVisibility(View.GONE);
-                        noShop.setVisibility(View.VISIBLE);
-//                        goCal.setEnabled(false);
-                        image.setClickable(false);
-                    }
-                    totalPrice.setText(TextUtils.getPriceText(event.getAllSelectPrice()));
-
-                }
+        if (event != null) {
+            int count = event.getAllSelectCount();
+            if (count > 0) {
+                shopCartNum.setText(String.valueOf(count));
+                shopCartNum.setVisibility(View.VISIBLE);
+                totalPrice.setVisibility(View.VISIBLE);
+                noShop.setVisibility(View.GONE);
+                goCal.setEnabled(true);
+                image.setClickable(true);
+            } else {
+                shopCartNum.setVisibility(View.GONE);
+                totalPrice.setVisibility(View.GONE);
+                noShop.setVisibility(View.VISIBLE);
+                goCal.setEnabled(false);
+                image.setClickable(false);
             }
-        });
+            totalPrice.setText(TextUtils.getPriceText(event.getAllSelectPrice()));
+
+        }
     }
 
     private void initData() {
-
         mGoodsCategoryListAdapter = new RecycleGoodsCategoryListAdapter(null, this);
         linearLayoutManager = new LinearLayoutManager(this);
         mGoodsCateGoryList.setLayoutManager(linearLayoutManager);
@@ -151,7 +141,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.addItemDecoration(new RecyclerItemDecoration(DensityUtil.dp2px(this, DEFAULT_ITEM_INTVEL), 2));
         goodAdapter = new GoodAdapter(this, null);
-        goodAdapter.setmActivity(this);
         recyclerView.setAdapter(goodAdapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override

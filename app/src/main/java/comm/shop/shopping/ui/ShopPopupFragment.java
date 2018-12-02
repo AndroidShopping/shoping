@@ -1,5 +1,6 @@
 package comm.shop.shopping.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -17,22 +18,22 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.greenrobot.eventbus.EventBus;
-
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.shopping.R;
-import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopItem;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.utils.TextUtils;
 
+@SuppressLint("ValidFragment")
 public class ShopPopupFragment extends DialogFragment {
 
+    private final MainActivity activity;
     private ShopResult result;
+
+    public ShopPopupFragment(MainActivity mainActivity) {
+        this.activity = mainActivity;
+    }
 
     @Nullable
     @Override
@@ -54,7 +55,7 @@ public class ShopPopupFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 result.clearAllSelectItem();
-                BusProvider.getBus().post(result);
+                activity.onEvent(result);
                 dismiss();
             }
         });
@@ -90,7 +91,6 @@ public class ShopPopupFragment extends DialogFragment {
         }
 
 
-
         @NonNull
         @Override
         public MyHolderView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -109,7 +109,7 @@ public class ShopPopupFragment extends DialogFragment {
                 public void onClick(View v) {
                     item.setBuyCount(item.getBuyCount() + 1);
                     notifyDataSetChanged();
-                    BusProvider.getBus().post(shopResult);
+                    activity.onEvent(shopResult);
                 }
             });
             holder.ivGoodsMinus.setOnClickListener(new View.OnClickListener() {
@@ -117,7 +117,7 @@ public class ShopPopupFragment extends DialogFragment {
                 public void onClick(View v) {
                     item.setBuyCount(item.getBuyCount() - 1);
                     notifyDataSetChanged();
-                    BusProvider.getBus().post(shopResult);
+                    activity.onEvent(shopResult);
                 }
             });
 
