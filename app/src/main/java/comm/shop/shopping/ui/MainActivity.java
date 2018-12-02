@@ -58,8 +58,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     TextView noShop;
     @BindView(R.id.go_cal)
     View goCal;
-    @BindView(R.id.shopCartMain)
-    RelativeLayout shopCartMain;
     private ViewGroup anim_mask_layout;
     ShopPopupFragment myFragment;
 
@@ -74,7 +72,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     private ShopResult result;
     private int mIndex;
     private boolean move;
-    private boolean isMoved;
     private LinearLayoutManager linearLayoutManager;
 
     @Override
@@ -135,7 +132,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         mGoodsCategoryListAdapter.setOnItemClickListener(new RecycleGoodsCategoryListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                isMoved = true;
                 setChecked(position, true);
             }
         });
@@ -707,7 +703,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
 
 
     private void initView() {
-        shopCartMain = findViewById(R.id.shopCartMain);
         shopCartNum = findViewById(R.id.shopCartNum);
         totalPrice = findViewById(R.id.totalPrice);
         noShop = findViewById(R.id.noShop);

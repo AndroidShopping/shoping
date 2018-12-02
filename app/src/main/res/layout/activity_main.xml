@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -77,6 +78,88 @@
 
     </FrameLayout>
 
-    <include layout="@layout/shop_cart" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/shop_cart_bg"
+        android:clipChildren="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shop_cart_select"
+                android:clickable="false"
+
+                />
+
+            <TextView
+                android:id="@+id/shopCartNum"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="right"
+                android:layout_marginTop="7dp"
+                android:background="@drawable/shopcart_num_bg"
+                android:gravity="center"
+                android:padding="2dp"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:visibility="gone"
+                tools:text="s"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+
+        <TextView
+            android:id="@+id/totalPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="15dp"
+            android:layout_toRightOf="@id/image"
+            android:text="¥0"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+
+        <TextView
+            android:id="@+id/noShop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="15dp"
+            android:layout_toRightOf="@id/image"
+            android:text="@string/cart_empty"
+            android:textColor="#999999"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/go_cal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#3F3F3F"
+            android:enabled="false"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/go_caclu"
+            android:textColor="@color/jie_suan_color"
+            android:textSize="18sp" />
+
+    </LinearLayout>
 
 </LinearLayout>
