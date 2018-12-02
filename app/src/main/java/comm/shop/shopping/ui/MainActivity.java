@@ -2,16 +2,13 @@ package comm.shop.shopping.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -22,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.classic.common.MultipleStatusView;
 import com.google.gson.Gson;
 
 import butterknife.BindView;
@@ -64,6 +62,12 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     private RecycleGoodsCategoryListAdapter mGoodsCategoryListAdapter;
     @BindView(R.id.goods_recycleView)
     RecyclerView recyclerView;
+
+
+    @BindView(R.id.refresh_multiple_status_view)
+    MultipleStatusView statusView;
+
+
     private GoodAdapter goodAdapter;
     private StickyHeaderGridLayoutManager gridLayoutManager;
     public static final int DEFAULT_ITEM_INTVEL = 10;
@@ -205,12 +209,11 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     //将当前选中的item居中
     private void moveToCenter(int position) {
         //将点击的position转换为当前屏幕上可见的item的位置以便于计算距离顶部的高度，从而进行移动居中
-        int itemPosition=position-linearLayoutManager.findFirstVisibleItemPosition();
+        int itemPosition = position - linearLayoutManager.findFirstVisibleItemPosition();
         /*
         当往上滑动太快，会出现itemPosition为-1的情况。做下判断
          */
-        if (0<itemPosition&&itemPosition<linearLayoutManager.getChildCount())
-        {
+        if (0 < itemPosition && itemPosition < linearLayoutManager.getChildCount()) {
             View childAt = mGoodsCateGoryList.getChildAt(position - linearLayoutManager.findFirstVisibleItemPosition());
             int y = (childAt.getTop() - linearLayoutManager.getHeight() / 2);
             mGoodsCateGoryList.smoothScrollBy(0, y);
@@ -239,6 +242,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
 
 
     public void onStartLoading() {
+        statusView.showLoading();
 
     }
 
@@ -258,11 +262,17 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     }
 
     public void showData(ShopResult shopResult) {
+        if (shopResult == null) {
+            statusView.showEmpty();
+            return;
+        }
 
         if (shopResult.isBizError()) {
             ToastUtils.show(shopResult.getMessage());
+            statusView.showError();
             return;
         }
+        statusView.showContent();
         Gson gson = new Gson();
         try {
             String string = "{\n" +
@@ -664,32 +674,31 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
 
     public void showError(NetError error) {
         if (error != null) {
-//            switch (error.getType()) {
-//                case NetError.ParseError:
-//                    errorView.setMsg("数据解析异常");
-//                    break;
-//
-//                case NetError.AuthError:
-//                    errorView.setMsg("身份验证异常");
-//                    break;
-//
-//                case NetError.BusinessError:
-//                    errorView.setMsg("业务异常");
-//                    break;
-//
-//                case NetError.NoConnectError:
-//                    errorView.setMsg("网络无连接");
-//                    break;
-//
-//                case NetError.NoDataError:
-//                    errorView.setMsg("数据为空");
-//                    break;
-//
-//                case NetError.OtherError:
-//                    errorView.setMsg("其他异常");
-//                    break;
-//            }
-//            contentLayout.showError();
+            switch (error.getType()) {
+                case NetError.ParseError:
+                    statusView.showError();
+                    break;
+
+                case NetError.AuthError:
+                    statusView.showError();
+                    break;
+
+                case NetError.BusinessError:
+                    statusView.showError();
+                    break;
+
+                case NetError.NoConnectError:
+                    statusView.showNoNetwork();
+                    break;
+
+                case NetError.NoDataError:
+                    statusView.showEmpty();
+                    break;
+
+                case NetError.OtherError:
+                    statusView.showError();
+                default:
+            }
         }
     }
 
