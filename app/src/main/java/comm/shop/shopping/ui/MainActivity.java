@@ -26,16 +26,12 @@ import android.widget.TextView;
 import com.blankj.rxbus.RxBus;
 import com.google.gson.Gson;
 
-import java.util.List;
-
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.event.BusProvider;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.adapter.adapter.GoodAdapter;
 import comm.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
-import comm.shop.shopping.model.ShopCategory;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.present.PShopPresenter;
 import comm.shop.shopping.stickyheadergrid.StickyHeaderGridLayoutManager;
@@ -94,9 +90,25 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
                 myFragment.showNow(getSupportFragmentManager(), "dialog_show");
             }
         });
+
+        goCal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SubmitActivity.start(MainActivity.this, result);
+            }
+        });
+        getP().getShopProductList();
+    }
+
+
+    @Override
+    public void bindEvent() {
         BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
             @Override
             public void onEvent(ShopResult event) {
+                mGoodsCategoryListAdapter.notifyDataSetChanged();
+                goodAdapter.notifyDataSetChanged();
+
                 if (event != null) {
                     int count = event.getAllSelectCount();
                     if (count > 0) {
@@ -118,26 +130,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
                 }
             }
         });
-        goCal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SubmitActivity.start(MainActivity.this, result);
-            }
-        });
-        getP().getShopProductList();
-    }
-
-
-    @Override
-    public void bindEvent() {
-        BusProvider.getBus().subscribe(this, new RxBus.Callback<ShopResult>() {
-            @Override
-            public void onEvent(ShopResult absEvent) {
-                mGoodsCategoryListAdapter.notifyDataSetChanged();
-                goodAdapter.notifyDataSetChanged();
-            }
-        });
-
     }
 
     private void initData() {
@@ -818,18 +810,4 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         view.setLayoutParams(lp);
         return view;
     }
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-
-    @Override
-    public boolean useEventBus() {
-        return true;
-    }
-
-
 }
