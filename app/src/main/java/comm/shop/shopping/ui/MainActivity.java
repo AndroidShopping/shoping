@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -21,7 +20,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -78,7 +76,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     public void initData(Bundle savedInstanceState) {
         initView();
         initData();
-        setStatusBar();
         myFragment = new ShopPopupFragment(this);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -624,8 +621,14 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
             e.printStackTrace();
         }
         this.result = shopResult;
+        shopCartNum.setVisibility(View.GONE);
+        totalPrice.setVisibility(View.GONE);
+        noShop.setVisibility(View.VISIBLE);
+        goCal.setEnabled(false);
+        image.setClickable(false);
         mGoodsCategoryListAdapter.updateShopResult(shopResult);
         goodAdapter.updateShopResult(shopResult);
+
     }
 
     @Override
@@ -712,17 +715,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
                 refresh();
             }
         });
-    }
-
-
-    protected void setStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-        } else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        }
     }
 
 

@@ -7,6 +7,7 @@
     <string name="title_check">请核对您的订单</string>
     <string name="go_pay">去支付</string>
     <string name="title_submit">提交订单</string>
+    <string name="title_main">商品选择</string>
     <string name="back">返回</string>
     <string name="submit_coin">请投币</string>
     <string name="submit_coin_down">请在下方投币</string>
@@ -19,4 +20,5 @@
     <string name="empty_view_hint">暂无数据</string>
     <string name="error_view_hint">加载失败</string>
     <string name="no_network_view_hint">网络异常</string>
+    <string name="msg_no_net">网络无连接</string>
 </resources>
