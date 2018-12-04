@@ -1,8 +1,13 @@
 package comm.shop.shopping.ui;
 
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,11 +27,21 @@ import android.widget.TextView;
 import com.classic.common.MultipleStatusView;
 import com.google.gson.Gson;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import butterknife.BindView;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 import comm.shop.shopping.adapter.adapter.GoodAdapter;
 import comm.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
+import comm.shop.shopping.boothprint.BluetoothController;
+import comm.shop.shopping.boothprint.base.AppInfo;
+import comm.shop.shopping.boothprint.bt.BtInterface;
+import comm.shop.shopping.boothprint.bt.BtUtil;
+import comm.shop.shopping.boothprint.print.PrintMsgEvent;
+import comm.shop.shopping.boothprint.print.PrinterMsgType;
+import comm.shop.shopping.boothprint.util.ToastUtil;
 import comm.shop.shopping.model.ShopResult;
 import comm.shop.shopping.present.PShopPresenter;
 import comm.shop.shopping.stickyheadergrid.StickyHeaderGridLayoutManager;
@@ -35,9 +50,11 @@ import comm.shop.shopping.utils.TextUtils;
 import comm.shop.shopping.utils.ToastUtils;
 import comm.shop.shopping.widget.MyDividerItemDecoration;
 
-public class MainActivity extends BaseAcivity<PShopPresenter> {
+public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInterface {
+    int PERMISSION_REQUEST_COARSE_LOCATION = 2;
 
-
+    public BluetoothAdapter mAdapter;
+    public boolean mBtEnable;
     @BindView(R.id.main_picture_view)
     ImageView mainPictureView;
     @BindView(R.id.refresh_view)
@@ -76,6 +93,56 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
     private boolean move;
     private LinearLayoutManager linearLayoutManager;
 
+    /**
+     * blue tooth broadcast receiver
+     */
+    protected BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (null == intent) {
+                return;
+            }
+            String action = intent.getAction();
+            if (android.text.TextUtils.isEmpty(action)) {
+                return;
+            }
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                btStartDiscovery(intent);
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                btFinishDiscovery(intent);
+            } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                btStatusChanged(intent);
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                btFoundDevice(intent);
+            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                btBondStatusChange(intent);
+            } else if ("android.bluetooth.device.action.PAIRING_REQUEST".equals(action)) {
+                btPairingRequest(intent);
+            }
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        BtUtil.registerBluetoothReceiver(mBtReceiver, this);
+        BluetoothController.init(this);
+        if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
+            mAdapter.enable();
+            ToastUtil.showToast(MainActivity.this, R.string.ble_state_cloes);
+            return;
+        }
+        if (android.text.TextUtils.isEmpty(AppInfo.btAddress)) {
+            startActivity(new Intent(MainActivity.this, SearchBluetoothActivity.class));
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        BtUtil.unregisterBluetoothReceiver(mBtReceiver, this);
+    }
+
     @Override
     public void initData(Bundle savedInstanceState) {
         initView();
@@ -92,10 +159,24 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         goCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
+                    mAdapter.enable();
+                    ToastUtil.showToast(MainActivity.this, R.string.ble_state_cloes);
+                }
+                if (android.text.TextUtils.isEmpty(AppInfo.btAddress)) {
+                    startActivity(new Intent(MainActivity.this, SearchBluetoothActivity.class));
+                    return;
+                }
+
                 SubmitActivity.start(MainActivity.this, result);
             }
         });
         getP().getShopProductList();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+        }
+        EventBus.getDefault().register(this);
     }
 
     public void onEvent(ShopResult event) {
@@ -646,6 +727,36 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
 
     }
 
+    @Override
+    public void btStartDiscovery(Intent intent) {
+
+    }
+
+    @Override
+    public void btFinishDiscovery(Intent intent) {
+
+    }
+
+    @Override
+    public void btStatusChanged(Intent intent) {
+
+    }
+
+    @Override
+    public void btFoundDevice(Intent intent) {
+
+    }
+
+    @Override
+    public void btBondStatusChange(Intent intent) {
+
+    }
+
+    @Override
+    public void btPairingRequest(Intent intent) {
+
+    }
+
     public static class RecyclerItemDecoration extends RecyclerView.ItemDecoration {
         private int itemSpace;
         private int itemNum;
@@ -818,5 +929,23 @@ public class MainActivity extends BaseAcivity<PShopPresenter> {
         lp.topMargin = y;
         view.setLayoutParams(lp);
         return view;
+    }
+
+    /**
+     * handle printer message
+     *
+     * @param event print msg event
+     */
+    @Subscribe
+    public void onEventMainThread(PrintMsgEvent event) {
+        if (event.type == PrinterMsgType.MESSAGE_TOAST) {
+            ToastUtil.showToast(MainActivity.this, event.msg);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(MainActivity.this);
     }
 }

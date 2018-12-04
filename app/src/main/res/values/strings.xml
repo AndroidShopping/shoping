@@ -21,4 +21,22 @@
     <string name="error_view_hint">加载失败</string>
     <string name="no_network_view_hint">网络异常</string>
     <string name="msg_no_net">网络无连接</string>
+    <string name="ble_state_cloes">蓝牙被关闭请打开...</string>
+    <string name="disconnect_printer">未连接蓝牙打印机</string>
+    <string name="close_blue">系统蓝牙已关闭,点击开启</string>
+    <string name="search_bluetooth">点击后搜索蓝牙打印机</string>
+    <string name="connected">已连接</string>
+    <string name="unkonw_device">未知设备</string>
+    <string name="search_device">正在搜索蓝牙设备…</string>
+    <string name="search_ok">搜索完成</string>
+    <string name="re_search">点击重新搜索</string>
+    <string name="pairring">正在配对......</string>
+    <string name="paired">已配对</string>
+    <string name="un_pair">未配对</string>
+    <string name="bind">绑定</string>
+    <string name="click_bind_device">点击确认绑定蓝牙设备</string>
+    <string name="cancel">取消</string>
+    <string name="confirm_ok">确认</string>
+    <string name="bind_fail">蓝牙绑定失败,请重试</string>
+    <string name="unkonw_address">未知地址</string>
 </resources>

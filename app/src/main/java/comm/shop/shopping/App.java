@@ -10,6 +10,7 @@ import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.net.NetProvider;
 import cn.droidlover.xdroidmvp.net.RequestHandler;
 import cn.droidlover.xdroidmvp.net.XApi;
+import comm.shop.shopping.boothprint.base.AppInfo;
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -27,6 +28,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        AppInfo.init(getApplicationContext());
         context = this;
 //        SerialPortFinder finder = new SerialPortFinder();
 //        String[] allDevicesPath = finder.getAllDevicesPath();
