@@ -39,4 +39,11 @@
     <string name="confirm_ok">确认</string>
     <string name="bind_fail">蓝牙绑定失败,请重试</string>
     <string name="unkonw_address">未知地址</string>
+    <string name="ip_tip">服务器IP:</string>
+    <string name="port_tip">端口:</string>
+    <string name="ip_seting">服务器IP地址设置</string>
+    <string name="ip_example">127.1.1.1</string>
+    <string name="ip_unvalid">请输入正确的IP地址</string>
+    <string name="port_unvalid">请输入0到65535的整数</string>
+    <string name="port_example">3445</string>
 </resources>

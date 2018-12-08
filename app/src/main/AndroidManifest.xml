@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <!-- 允许程序发现和配对蓝牙设备 -->
     <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!--地理位置-->
+    <!-- 地理位置 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- 允许程序连接到已配对的蓝牙设备 -->
@@ -19,9 +19,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <!-- 允许程序发现和配对蓝牙设备 -->
     <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!--地理位置-->
+    <!-- 地理位置 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
 
     <application
         android:name="comm.shop.shopping.App"
@@ -41,10 +40,12 @@
         </activity>
         <activity android:name="comm.shop.shopping.ui.SubmitActivity" />
         <activity android:name="comm.shop.shopping.ui.SubmitCoinActivity" />
-        <activity android:name="comm.shop.shopping.ui.PrintOrderActivity"></activity>
+        <activity android:name="comm.shop.shopping.ui.PrintOrderActivity" />
         <activity android:name="comm.shop.shopping.ui.SearchBluetoothActivity" />
 
         <service android:name="comm.shop.shopping.boothprint.BtService" />
+
+        <activity android:name="comm.shop.shopping.ui.SettingActivity"></activity>
     </application>
 
 </manifest>

@@ -689,11 +689,11 @@ public class PrinterUtils {
      */
     @SuppressWarnings("unused")
     public static byte[] feedPaperCut() {
-        byte[] result = new byte[4];
+        byte[] result = new byte[3];
         result[0] = GS;
-        result[1] = 86;
-        result[2] = 65;
-        result[3] = 0;
+        result[1] = 'v';
+        result[2] = 0;
+//        result[3] = 0;
         return result;
     }
 
