@@ -29,6 +29,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="design_width_in_dp"
+            android:value="3210" />
+        <meta-data
+        android:name="design_height_in_dp"
+        android:value="640" />
+
         <activity
             android:name="comm.shop.shopping.ui.MainActivity"
             android:launchMode="singleTask">
