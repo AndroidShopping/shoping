@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+
+def artifact = "usbserial.jar"
+
+android {
+
+    group = 'com.felhr.usbserial'
+    version = "2.3.3"
+
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+
+    compileOptions {
+        encoding "UTF-8"
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        archivesBaseName = "dd"
+    }
+
+    //noinspection GroovyAssignabilityCheck
+    task deleteJar(type: Delete) {
+        delete "eclipse_lib/${artifact}"
+    }
+
+    //noinspection GroovyAssignabilityCheck
+    task createJar(type: org.gradle.api.tasks.Copy) {
+        from('build/intermediates/bundles/release/')
+        into('eclipse_lib/')
+        include('classes.jar')
+        rename('classes.jar', artifact)
+    }
+
+    dependencies {
+        implementation 'com.annimon:stream:1.2.1'
+    }
+
+    createJar.dependsOn(deleteJar, build)
+}

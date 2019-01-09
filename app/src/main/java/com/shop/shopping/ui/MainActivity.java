@@ -26,13 +26,7 @@ import android.widget.TextView;
 
 import com.classic.common.MultipleStatusView;
 import com.google.gson.Gson;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
-import butterknife.BindView;
-import cn.droidlover.xdroidmvp.net.NetError;
-import cn.droidlover.xdroidmvp.shopping.R;
+import com.shop.shopping.MyPayService;
 import com.shop.shopping.adapter.adapter.GoodAdapter;
 import com.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
 import com.shop.shopping.boothprint.BluetoothController;
@@ -49,6 +43,13 @@ import com.shop.shopping.utils.DensityUtil;
 import com.shop.shopping.utils.TextUtils;
 import com.shop.shopping.utils.ToastUtils;
 import com.shop.shopping.widget.MyDividerItemDecoration;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
+import butterknife.BindView;
+import cn.droidlover.xdroidmvp.net.NetError;
+import cn.droidlover.xdroidmvp.shopping.R;
 
 public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInterface {
     int PERMISSION_REQUEST_COARSE_LOCATION = 2;
@@ -125,6 +126,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     @Override
     protected void onStart() {
         super.onStart();
+        startService(new Intent(this, MyPayService.class));
         BtUtil.registerBluetoothReceiver(mBtReceiver, this);
         BluetoothController.init(this);
         if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
