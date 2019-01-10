@@ -1,1 +1,1 @@
-include ':app', ':mvp', ':usbserial'
+include ':app', ':mvp', ':usbserial', ':ftdiusb'

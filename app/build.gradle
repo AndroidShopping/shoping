@@ -68,6 +68,5 @@ dependencies {
     implementation 'com.wuhenzhizao:titlebar:1.1.3'
     implementation 'com.classic.common:multiple-status-view:1.5.1'
     implementation 'me.jessyan:autosize:1.1.0'
-    implementation 'com.github.zhouzhuo810:OkUSB:1.0.0'
     implementation project(':usbserial')
 }
