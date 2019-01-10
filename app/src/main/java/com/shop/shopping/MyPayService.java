@@ -145,7 +145,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                 UsbSerialInterface.FLOW_CONTROL_OFF);
 
         if (!ret)
-            Toast.makeText(context, "No Usb serial ports available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.no_usb_avalible, Toast.LENGTH_SHORT).show();
     }
 
     @Nullable
