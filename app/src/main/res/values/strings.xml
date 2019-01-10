@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">点餐</string>
+    <string name="cant">不能打开串口设备</string>
+    <string name="usb_dis">USB设备断开连接</string>
+    <string name="dont_usb">USB没有连接串口设备</string>
     <string name="mark">¥</string>
     <string name="go_caclu">去结算</string>
     <string name="cart_empty">购物车为空</string>

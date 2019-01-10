@@ -25,6 +25,8 @@ import com.felhr.usbserial.UsbSerialInterface;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cn.droidlover.xdroidmvp.shopping.R;
+
 public class MyPayService extends Service implements SerialPortCallback {
 
     public static final String ACTION_USB_READY = "com.felhr.connectivityservices.USB_READY";
@@ -74,16 +76,16 @@ public class MyPayService extends Service implements SerialPortCallback {
                         UsbSerialInterface.PARITY_EVEN,
                         UsbSerialInterface.FLOW_CONTROL_OFF);
                 if (!ret)
-                    Toast.makeText(context, "Couldnt open the device", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.cant, Toast.LENGTH_SHORT).show();
             } else if (arg1.getAction().equals(ACTION_USB_DETACHED)) {
 
                 UsbDevice usbDevice = arg1.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 boolean ret = builder.disconnectDevice(usbDevice);
 
                 if (ret)
-                    Toast.makeText(context, "Usb device disconnected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.usb_dis, Toast.LENGTH_SHORT).show();
                 else
-                    Toast.makeText(context, "Usb device wasnt a serial port", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.dont_usb, Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(ACTION_USB_DISCONNECTED);
                 arg0.sendBroadcast(intent);
@@ -239,8 +241,8 @@ public class MyPayService extends Service implements SerialPortCallback {
                     byte[] data = (byte[]) msg.obj;
                     if (port <= serialPorts.size() - 1) {
                         UsbSerialDevice serialDevice = serialPorts.get(port);
-                        serialDevice.write(data);
-//                        serialDevice.getOutputStream().write(data);
+//                        serialDevice.write(data);
+                        serialDevice.getOutputStream().write(data);
                     }
                 }
             };
