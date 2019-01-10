@@ -45,6 +45,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     public static final int SYNC_READ = 3;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final int BAUD_RATE = 9600; // BaudRate. Change this value if you need
+    private static final int FTDI_STOP_BITS_1 =0;
     public static boolean SERVICE_CONNECTED = false;
 
     private List<UsbSerialDevice> serialPorts;
@@ -71,10 +72,10 @@ public class MyPayService extends Service implements SerialPortCallback {
         public void onReceive(Context arg0, Intent arg1) {
             if (arg1.getAction().equals(ACTION_USB_ATTACHED)) {
                 boolean ret = builder.openSerialPorts(context, BAUD_RATE,
-                        UsbSerialInterface.DATA_BITS_8,
-                        UsbSerialInterface.STOP_BITS_1,
-                        UsbSerialInterface.PARITY_EVEN,
-                        UsbSerialInterface.FLOW_CONTROL_OFF);
+                        8,
+                        0,
+                        2,
+                        0);
                 if (!ret)
                     Toast.makeText(context, R.string.cant, Toast.LENGTH_SHORT).show();
             } else if (arg1.getAction().equals(ACTION_USB_DETACHED)) {
@@ -128,6 +129,12 @@ public class MyPayService extends Service implements SerialPortCallback {
             e.printStackTrace();
         }
         write(new byte[]{0x2}, 0);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        write(new byte[]{0x30}, 0);
     }
 
     @Override
@@ -138,11 +145,12 @@ public class MyPayService extends Service implements SerialPortCallback {
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         builder = SerialPortBuilder.createSerialPortBuilder(this);
 
+
         boolean ret = builder.openSerialPorts(context, BAUD_RATE,
-                UsbSerialInterface.DATA_BITS_8,
-                UsbSerialInterface.STOP_BITS_1,
-                UsbSerialInterface.PARITY_EVEN,
-                UsbSerialInterface.FLOW_CONTROL_OFF);
+                8,
+                0,
+                2,
+                0);
 
         if (!ret)
             Toast.makeText(context, R.string.no_usb_avalible, Toast.LENGTH_SHORT).show();
@@ -209,7 +217,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                 int value = inputStream.read();
                 if (value != -1) {
                     String str = toASCII(value);
-                    mHandler.obtainMessage(SYNC_READ, port, 0, str).sendToTarget();
+//                    mHandler.obtainMessage(SYNC_READ, port, 0, str).sendToTarget();
                 }
             }
         }
