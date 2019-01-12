@@ -13,14 +13,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.serialport.SerialPortFinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.felhr.usbserial.SerialInputStream;
 import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
 import com.felhr.usbserial.UsbSerialDevice;
-import com.felhr.usbserial.UsbSerialInterface;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cn.droidlover.xdroidmvp.shopping.R;
 
 public class MyPayService extends Service implements SerialPortCallback {
+    String TAG = "MyPayService";
 
     public static final String ACTION_USB_READY = "com.felhr.connectivityservices.USB_READY";
     public static final String ACTION_USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
@@ -45,7 +47,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     public static final int SYNC_READ = 3;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final int BAUD_RATE = 9600; // BaudRate. Change this value if you need
-    private static final int FTDI_STOP_BITS_1 =0;
+    private static final int FTDI_STOP_BITS_1 = 0;
     public static boolean SERVICE_CONNECTED = false;
 
     private List<UsbSerialDevice> serialPorts;
@@ -151,11 +153,13 @@ public class MyPayService extends Service implements SerialPortCallback {
                 0,
                 2,
                 0);
+        SerialPortFinder finder = new SerialPortFinder();
+        String[] allDevicesPath = finder.getAllDevicesPath();
+        Log.d(TAG, "onCreate: " + allDevicesPath.toString());
 
         if (!ret)
             Toast.makeText(context, R.string.no_usb_avalible, Toast.LENGTH_SHORT).show();
     }
-
 
 
     @Nullable

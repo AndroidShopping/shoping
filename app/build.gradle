@@ -17,15 +17,25 @@ android {
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         versionCode rootProject.ext.android.versionCode
         versionName rootProject.ext.android.versionName
-//        ndk {
-//            moduleName "serial_port"
-//        }
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
     }
-//    externalNativeBuild {
-//        ndkBuild {
-//            path 'src/main/jni/Android.mk'
-//        }
-//    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
