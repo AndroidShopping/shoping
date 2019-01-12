@@ -6,14 +6,18 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.shop.shopping.model.ConfirmOrderResult;
+import com.shop.shopping.model.ShopResult;
+import com.shop.shopping.present.ConfirmPresenter;
+import com.shop.shopping.utils.ToastUtils;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
-import com.shop.shopping.model.ShopResult;
 
-public class SubmitCoinActivity extends BaseAcivity {
+public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     public static final String RESULT = "result";
     public static final String ORDER_ID = "orderId";
     @BindView(R.id.titlebar)
@@ -43,13 +47,11 @@ public class SubmitCoinActivity extends BaseAcivity {
         submitView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = getIntent();
-                ShopResult result = intent.getParcelableExtra(RESULT);
-                PrintOrderActivity.start(SubmitCoinActivity.this,
-                        result,intent.getStringExtra(ORDER_ID),123);
 
             }
         });
+        Intent intent = getIntent();
+        getP().getShopProductList(intent.getStringExtra(ORDER_ID));
 
     }
 
@@ -59,13 +61,31 @@ public class SubmitCoinActivity extends BaseAcivity {
     }
 
     @Override
-    public Object newP() {
-        return null;
+    public ConfirmPresenter newP() {
+        return new ConfirmPresenter();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ButterKnife.bind(this);
+    }
+
+    public void onStartLoading() {
+    }
+
+    public void showError(NetError error) {
+    }
+
+    public void showData(ConfirmOrderResult confirmOrderResult) {
+
+        if (confirmOrderResult.isBizError()) {
+            ToastUtils.show(confirmOrderResult.message);
+            return;
+        }
+        Intent intent = getIntent();
+        ShopResult result = intent.getParcelableExtra(RESULT);
+        PrintOrderActivity.start(SubmitCoinActivity.this,
+                result, intent.getStringExtra(ORDER_ID), 123);
     }
 }

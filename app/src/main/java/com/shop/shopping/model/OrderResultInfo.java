@@ -1,13 +1,13 @@
 package com.shop.shopping.model;
 
 public class OrderResultInfo {
-    private String orderId;
+    private String id;
 
     public String getOrderId() {
-        return orderId;
+        return id;
     }
 
     public void setOrderId(String orderId) {
-        this.orderId = orderId;
+        this.id = orderId;
     }
 }

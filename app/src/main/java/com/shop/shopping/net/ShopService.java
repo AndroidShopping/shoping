@@ -1,7 +1,9 @@
 package com.shop.shopping.net;
 
+import com.shop.shopping.model.ConfirmOrderResult;
 import com.shop.shopping.model.OrderResult;
 import com.shop.shopping.model.ShopResult;
+
 import io.reactivex.Flowable;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -22,4 +24,8 @@ public interface ShopService {
     @POST("/shop/addShopOrder")
     Flowable<OrderResult> createPreviewOrder(@Field(value = "total") int total,
                                              @Field(value = "order") String items);
+
+    @FormUrlEncoded
+    @POST("/shop/updateShopOrder")
+    Flowable<ConfirmOrderResult> confirmOrder(@Field(value = "id") String id);
 }
