@@ -9,8 +9,8 @@ import com.shop.shopping.utils.PatternUtils;
 public class URLUtils {
     public static final String findBaseUrl() {
         SharedPref instance = SharedPref.getInstance(App.getContext());
-        String ip = instance.getString(Keys.IP, "");
-        String port = instance.getString(Keys.PORT, "");
+        String ip = instance.getString(Keys.IP, "192.168.10.164");
+        String port = instance.getString(Keys.PORT, "9999");
         boolean ip1 = PatternUtils.isIP(ip);
         boolean port1 = PatternUtils.isPort(port);
 //        http://rap2api.taobao.org/
