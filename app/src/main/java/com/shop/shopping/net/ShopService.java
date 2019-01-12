@@ -14,12 +14,12 @@ import retrofit2.http.POST;
 
 public interface ShopService {
 
-    @GET("/shop/getShopDetails")
+    @GET("/shop/getShopCategory")
     Flowable<ShopResult> getShopItemList();
 
 
     @FormUrlEncoded
-    @POST("/shop/addShopOrder/")
+    @POST("/shop/addShopOrder")
     Flowable<OrderResult> createPreviewOrder(@Field(value = "total") int total,
                                              @Field(value = "order") String items);
 }

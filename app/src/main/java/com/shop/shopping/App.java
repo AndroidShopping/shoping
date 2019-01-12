@@ -9,7 +9,6 @@ import cn.droidlover.xdroidmvp.net.RequestHandler;
 import cn.droidlover.xdroidmvp.net.XApi;
 import com.shop.shopping.boothprint.base.AppInfo;
 
-import me.jessyan.autosize.AutoSizeConfig;
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -27,17 +26,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         AppInfo.init(getApplicationContext());
-        AutoSizeConfig.getInstance().getUnitsManager().setSupportDP(true).setSupportSP(true);
         context = this;
-//        SerialPortFinder finder = new SerialPortFinder();
-//        String[] allDevicesPath = finder.getAllDevicesPath();
-//        ICT104 = new SerialPortUtil();
-//        if (allDevicesPath != null) {
-//            ICT104.initSerialPort(allDevicesPath[0], SerialPortUtil.DEFAULT_BO_TE, 0);
-//        } else {
-//            ICT104.initSerialPort("/dev/ttyS4", SerialPortUtil.DEFAULT_BO_TE, 0);
-//
-
         XApi.registerProvider(new NetProvider() {
             @Override
             public Interceptor[] configInterceptors() {

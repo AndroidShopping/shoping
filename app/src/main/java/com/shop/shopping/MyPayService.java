@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.serialport.SerialPortFinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,31 +22,26 @@ import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
 import com.felhr.usbserial.UsbSerialDevice;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import android_serialport_api.SerialPort;
+import android_serialport_api.SerialPortFinder;
+import cn.droidlover.xdroidmvp.shopping.BuildConfig;
 import cn.droidlover.xdroidmvp.shopping.R;
 
 public class MyPayService extends Service implements SerialPortCallback {
     String TAG = "MyPayService";
 
-    public static final String ACTION_USB_READY = "com.felhr.connectivityservices.USB_READY";
     public static final String ACTION_USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
     public static final String ACTION_USB_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED";
-    public static final String ACTION_USB_NOT_SUPPORTED = "com.felhr.usbservice.USB_NOT_SUPPORTED";
-    public static final String ACTION_NO_USB = "com.felhr.usbservice.NO_USB";
-    public static final String ACTION_USB_PERMISSION_GRANTED = "com.felhr.usbservice.USB_PERMISSION_GRANTED";
-    public static final String ACTION_USB_PERMISSION_NOT_GRANTED = "com.felhr.usbservice.USB_PERMISSION_NOT_GRANTED";
     public static final String ACTION_USB_DISCONNECTED = "com.felhr.usbservice.USB_DISCONNECTED";
-    public static final String ACTION_CDC_DRIVER_NOT_WORKING = "com.felhr.connectivityservices.ACTION_CDC_DRIVER_NOT_WORKING";
-    public static final String ACTION_USB_DEVICE_NOT_WORKING = "com.felhr.connectivityservices.ACTION_USB_DEVICE_NOT_WORKING";
-    public static final int MESSAGE_FROM_SERIAL_PORT = 0;
-    public static final int CTS_CHANGE = 1;
-    public static final int DSR_CHANGE = 2;
-    public static final int SYNC_READ = 3;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final int BAUD_RATE = 9600; // BaudRate. Change this value if you need
-    private static final int FTDI_STOP_BITS_1 = 0;
     public static boolean SERVICE_CONNECTED = false;
 
     private List<UsbSerialDevice> serialPorts;
@@ -60,15 +54,14 @@ public class MyPayService extends Service implements SerialPortCallback {
     private WriteThread writeThread;
 
     private ReadThreadCOM readThreadCOM1, readThreadCOM2;
+    private SerailReadThread zhiBiQiReadThread, yingBiReadThread;
+    private SerailWriteThread zhiBiQiWriteThread, yingBiWriteThread;
+    private Handler zhiBiQiHandler, yingBiHandler;
 
     private IBinder binder = new UsbBinder();
+    private String zhiBiQiSerialName = "/dev/ttyS1";
 
     private Handler mHandler;
-
-    /*
-     * Different notifications from OS will be received here (USB attached, detached, permission responses...)
-     * About BroadcastReceiver: http://developer.android.com/reference/android/content/BroadcastReceiver.html
-     */
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent arg1) {
@@ -155,10 +148,22 @@ public class MyPayService extends Service implements SerialPortCallback {
                 0);
         SerialPortFinder finder = new SerialPortFinder();
         String[] allDevicesPath = finder.getAllDevicesPath();
-        Log.d(TAG, "onCreate: " + allDevicesPath.toString());
+        for (String s : allDevicesPath) {
+            try {
+                SerialPort serialPort = new SerialPort(new File(s), 9600, 2, 8, 1);
+                Handler writeHandler = null;
+                if (zhiBiQiSerialName.toLowerCase().equals(s.toLowerCase())) {
+                    new SerailWriteThread(serialPort.getOutputStream(), null).start();
+                    new SerailReadThread(serialPort.getInputStream(), s).start();
+                } else {
+                    writeHandler = null;
+                }
 
-        if (!ret)
-            Toast.makeText(context, R.string.no_usb_avalible, Toast.LENGTH_SHORT).show();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -205,6 +210,45 @@ public class MyPayService extends Service implements SerialPortCallback {
         }
     }
 
+    private class SerailReadThread extends Thread {
+        private AtomicBoolean keep = new AtomicBoolean(true);
+        private InputStream inputStream;
+        private String serialName;
+
+        public SerailReadThread(InputStream inputStream, String serialName) {
+            this.inputStream = inputStream;
+            this.serialName = serialName;
+        }
+
+        @Override
+        public void run() {
+            while (keep.get()) {
+                if (inputStream == null) {
+                    return;
+                }
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "SerailReadThread run: serialName =" + serialName);
+                }
+                int value = 0;
+                try {
+                    value = inputStream.read();
+                    if (value != -1) {
+                        String str = toASCII(value);
+                        Log.d(TAG, "SerailReadThread run: " + value);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        public void setKeep(boolean keep) {
+            this.keep.set(keep);
+        }
+
+    }
+
     private class ReadThreadCOM extends Thread {
         private int port;
         private AtomicBoolean keep = new AtomicBoolean(true);
@@ -240,6 +284,41 @@ public class MyPayService extends Service implements SerialPortCallback {
             builder.append((char) ((value >> (8 * i)) & 0xFF));
         }
         return builder.toString();
+    }
+
+    private class SerailWriteThread extends Thread {
+        OutputStream outputStream;
+        Handler serailHandler;
+
+        public SerailWriteThread(OutputStream stream, Handler handler) {
+            this.outputStream = stream;
+            serailHandler = handler;
+        }
+
+        @Override
+        @SuppressLint("HandlerLeak")
+        public void run() {
+            Looper.prepare();
+            try {
+                outputStream.write(new byte[]{2});
+                outputStream.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            serailHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    byte[] data = (byte[]) msg.obj;
+                    try {
+                        outputStream.write(data);
+                        outputStream.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            Looper.loop();
+        }
     }
 
     private class WriteThread extends Thread {

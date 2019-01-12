@@ -1,12 +1,17 @@
 package com.shop.shopping.present;
 
+import com.shop.shopping.model.ShopCategory;
+import com.shop.shopping.model.ShopItem;
+import com.shop.shopping.model.ShopResult;
+import com.shop.shopping.net.Api;
+import com.shop.shopping.ui.MainActivity;
+
+import java.util.List;
+
 import cn.droidlover.xdroidmvp.mvp.XPresent;
 import cn.droidlover.xdroidmvp.net.ApiSubscriber;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.net.XApi;
-import com.shop.shopping.model.ShopResult;
-import com.shop.shopping.net.Api;
-import com.shop.shopping.ui.MainActivity;
 
 public class PShopPresenter extends XPresent<MainActivity> {
 
@@ -25,6 +30,17 @@ public class PShopPresenter extends XPresent<MainActivity> {
 
                     @Override
                     public void onNext(ShopResult shopResult) {
+                        List<ShopCategory> data = shopResult.getData();
+                        if (data != null) {
+                            for (ShopCategory datum : data) {
+                                List<ShopItem> shopItem = datum.getShopItem();
+                                if (shopItem != null) {
+                                    for (ShopItem item : shopItem) {
+                                        item.setNumber(0);
+                                    }
+                                }
+                            }
+                        }
                         getV().showData(shopResult);
                     }
                 });
