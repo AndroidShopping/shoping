@@ -156,6 +156,8 @@ public class MyPayService extends Service implements SerialPortCallback {
             Toast.makeText(context, R.string.no_usb_avalible, Toast.LENGTH_SHORT).show();
     }
 
+
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
