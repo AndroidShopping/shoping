@@ -150,17 +150,29 @@ public class MyPayService extends Service implements SerialPortCallback {
         String[] allDevicesPath = finder.getAllDevicesPath();
         for (String s : allDevicesPath) {
             try {
-                SerialPort serialPort = new SerialPort(new File(s), 9600, 2, 8, 1);
-                Handler writeHandler = null;
+
                 if (zhiBiQiSerialName.toLowerCase().equals(s.toLowerCase())) {
-                    new SerailWriteThread(serialPort.getOutputStream(), null).start();
-                    new SerailReadThread(serialPort.getInputStream(), s).start();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SerialPort serialPort = null;
+                            try {
+                                serialPort = new SerialPort(new File(s), 9600, 2,8,1);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            Handler writeHandler = null;
+                            new SerailWriteThread(serialPort.getOutputStream(), null).start();
+                            new SerailReadThread(serialPort.getInputStream(), s).start();
+                        }
+                    }).start();
+
                 } else {
                     writeHandler = null;
                 }
 
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -227,7 +239,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                     return;
                 }
                 if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "SerailReadThread run: serialName =" + serialName);
+//                    Log.d(TAG, "SerailReadThread run: serialName =" + serialName);
                 }
                 int value = 0;
                 try {
@@ -298,13 +310,14 @@ public class MyPayService extends Service implements SerialPortCallback {
         @Override
         @SuppressLint("HandlerLeak")
         public void run() {
-            Looper.prepare();
             try {
-                outputStream.write(new byte[]{2});
+                outputStream.write(0x2);
                 outputStream.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            Looper.prepare();
+
             serailHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
