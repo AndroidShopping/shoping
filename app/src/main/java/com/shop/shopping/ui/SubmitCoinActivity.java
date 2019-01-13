@@ -12,11 +12,15 @@ import android.view.View;
 import android.widget.Button;
 
 import com.shop.shopping.MyPayService;
+import com.shop.shopping.boothprint.util.ToastUtil;
+import com.shop.shopping.entity.PayState;
 import com.shop.shopping.model.ConfirmOrderResult;
 import com.shop.shopping.model.ShopResult;
 import com.shop.shopping.present.ConfirmPresenter;
 import com.shop.shopping.utils.ToastUtils;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
+
+import java.lang.ref.WeakReference;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,12 +36,42 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     Button submitView;
     private ServiceConnection conn;
     private MyPayService myPayService;
-    private H handler;
+    private boolean hasClick = false;
+    private int payMoneyCount;
+    /**
+     * 是否因为网络原因或者服务器错误而退币
+     */
+    private boolean havePayOutBeacuseServerError;
 
     private static final class H extends Handler {
+        WeakReference<SubmitCoinActivity> activity;
+
+        public H(SubmitCoinActivity activity) {
+            this.activity = new WeakReference<>(activity);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            if (this.activity == null || this.activity.get() == null) {
+                return;
+            }
+            SubmitCoinActivity submitCoinActivity = activity.get();
+            int what = msg.what;
+            switch (what) {
+                case PayState.START_PAY:
+                    break;
+                case PayState.PAY_ERROR:
+                    ToastUtil.showToast(submitCoinActivity, R.string.chu_bi_shi_bai);
+                    break;
+                case PayState.PAY_OK:
+                    Intent intent = submitCoinActivity.getIntent();
+                    submitCoinActivity.getP().confirmOrder(intent.getStringExtra(ORDER_ID));
+
+                default:
+                    break;
+
+            }
         }
     }
 
@@ -61,12 +95,22 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
             }
         });
         submitView.setOnClickListener(new View.OnClickListener() {
+
+
             @Override
             public void onClick(View v) {
+                if (hasClick) {
+                    ToastUtil.showToast(SubmitCoinActivity.this, R.string.have_click);
+                    return;
+                }
+                hasClick = true;
+                Intent intent = getIntent();
+                ShopResult result = intent.getParcelableExtra(RESULT);
+                payMoneyCount = result.getAllSelectPrice();
+                myPayService.doPayFor(payMoneyCount);
             }
         });
-        Intent intent = getIntent();
-        getP().confirmOrder(intent.getStringExtra(ORDER_ID));
+
 
     }
 
@@ -88,7 +132,7 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 myPayService = ((MyPayService.PayBinder) service).getService();
-                myPayService.setHandler(new H());
+                myPayService.setHandler(new H(SubmitCoinActivity.this));
             }
 
             @Override
@@ -103,7 +147,6 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     protected void onDestroy() {
         super.onDestroy();
         myPayService.setHandler(null);
-        handler = null;
         unbindService(conn);
     }
 
@@ -111,12 +154,20 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     }
 
     public void showError(NetError error) {
+        if (!havePayOutBeacuseServerError) {
+            havePayOutBeacuseServerError = true;
+            myPayService.doPayOut(payMoneyCount);
+        }
     }
 
     public void showData(ConfirmOrderResult confirmOrderResult) {
 
         if (confirmOrderResult.isBizError()) {
             ToastUtils.show(confirmOrderResult.message);
+            if (!havePayOutBeacuseServerError) {
+                havePayOutBeacuseServerError = true;
+                myPayService.doPayOut(payMoneyCount);
+            }
             return;
         }
         Intent intent = getIntent();

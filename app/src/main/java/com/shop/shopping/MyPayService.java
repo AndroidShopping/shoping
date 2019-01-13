@@ -21,6 +21,7 @@ import com.felhr.usbserial.SerialInputStream;
 import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
 import com.felhr.usbserial.UsbSerialDevice;
+import com.shop.shopping.entity.PayState;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,13 +31,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import android_serialport_api.SerialPort;
-import android_serialport_api.SerialPortFinder;
 import cn.droidlover.xdroidmvp.shopping.BuildConfig;
 import cn.droidlover.xdroidmvp.shopping.R;
 
 public class MyPayService extends Service implements SerialPortCallback {
+    public static final int WHAT_WRITE_DATA = 0;
+    public static final int WHAT_CLOSE_IO = 1;
     String TAG = "MyPayService";
-
     public static final String ACTION_USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
     public static final String ACTION_USB_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED";
     public static final String ACTION_USB_DISCONNECTED = "com.felhr.usbservice.USB_DISCONNECTED";
@@ -53,21 +54,20 @@ public class MyPayService extends Service implements SerialPortCallback {
     private List<UsbSerialDevice> serialPorts;
 
     private Context context;
-    private UsbManager usbManager;
     private SerialPortBuilder builder;
 
     private Handler writeHandler;
     private WriteThread writeThread;
 
     private ReadThreadCOM readThreadCOM1, readThreadCOM2;
-    private SerailReadThread zhiBiQiReadThread, yingBiReadThread;
-    private SerailWriteThread zhiBiQiWriteThread, yingBiWriteThread;
-    private Handler zhiBiQiHandler, yingBiHandler;
+
 
     private String zhiBiQiSerialName = "/dev/ttyS1";
 
     private String yingBiQiSerialName = "/dev/ttyS3";
     private volatile Handler mHandler;
+    private volatile SerialPort zhiBiQiSerailPort, yingBiQiSerailPort;
+
 
     public int checkDeviceState() {
         if (serialPorts == null || serialPorts.size() != 2) {
@@ -83,7 +83,7 @@ public class MyPayService extends Service implements SerialPortCallback {
      *
      * @param moneyCount 需要退款的额度，单位是欧分
      */
-    private void doPayOut(int moneyCount) {
+    public void doPayOut(int moneyCount) {
         int payoutSmallCount = 0;
         int payoutBigCount = 0;
         boolean hasFount = false;
@@ -146,6 +146,20 @@ public class MyPayService extends Service implements SerialPortCallback {
     };
 
 
+    /**
+     * 用户开始支付接口
+     *
+     * @param moneyCount 用户需要支付的金额，单位为分
+     */
+    public void doPayFor(int moneyCount) {
+        if (mHandler != null) {
+            Message message = mHandler.obtainMessage();
+            message.what = PayState.START_PAY;
+            message.sendToTarget();
+        }
+
+    }
+
     @Override
     public void onSerialPortsDetected(List<UsbSerialDevice> serialPorts) {
         this.serialPorts = serialPorts;
@@ -199,38 +213,32 @@ public class MyPayService extends Service implements SerialPortCallback {
         this.context = this;
         MyPayService.SERVICE_CONNECTED = true;
         setFilter();
-        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         builder = SerialPortBuilder.createSerialPortBuilder(this);
-
-
         boolean ret = builder.openSerialPorts(context, BAUD_RATE,
                 8,
                 0,
                 2,
                 0);
-        SerialPortFinder finder = new SerialPortFinder();
-        String[] allDevicesPath = finder.getAllDevicesPath();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                SerialPort serialPort = null;
                 try {
-//                    serialPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 2, 8, 1);
-                    serialPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 8, 1, 'e');
+                    zhiBiQiSerailPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 8, 1, 'e');
+                    new SerailWriteThread(zhiBiQiSerailPort.getOutputStream(), null).start();
+                    new SerailReadThread(zhiBiQiSerailPort.getInputStream(), zhiBiQiSerialName).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Handler writeHandler = null;
-                new SerailWriteThread(serialPort.getOutputStream(), null).start();
-                new SerailReadThread(serialPort.getInputStream(), zhiBiQiSerialName).start();
 
-//                try {
-//                    serialPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 1);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                new SerailWriteThread(serialPort.getOutputStream(), null).start();
-//                new SerailReadThread(serialPort.getInputStream(), yingBiQiSerialName).start();
+                try {
+                    yingBiQiSerailPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 'e');
+                    new SerailWriteThread(yingBiQiSerailPort.getOutputStream(), null).start();
+                    new SerailReadThread(yingBiQiSerailPort.getInputStream(), yingBiQiSerialName).start();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
         }).start();
 
@@ -252,14 +260,20 @@ public class MyPayService extends Service implements SerialPortCallback {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (builder != null)
+        if (builder != null) {
             builder.unregisterListeners(context);
+        }
+        if (writeHandler != null) {
+            writeHandler.obtainMessage(WHAT_CLOSE_IO).sendToTarget();
+        }
         MyPayService.SERVICE_CONNECTED = false;
     }
 
     public void write(byte[] data, int port) {
-        if (writeThread != null)
-            writeHandler.obtainMessage(0, port, 0, data).sendToTarget();
+        if (writeHandler != null) {
+            writeHandler.obtainMessage(WHAT_WRITE_DATA, port, 0, data).sendToTarget();
+        }
+
     }
 
     public void setHandler(Handler mHandler) {
@@ -318,6 +332,11 @@ public class MyPayService extends Service implements SerialPortCallback {
                 }
 
             }
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         public void setKeep(boolean keep) {
@@ -327,12 +346,10 @@ public class MyPayService extends Service implements SerialPortCallback {
     }
 
     private class ReadThreadCOM extends Thread {
-        private int port;
         private AtomicBoolean keep = new AtomicBoolean(true);
         private SerialInputStream inputStream;
 
         public ReadThreadCOM(int port, SerialInputStream serialInputStream) {
-            this.port = port;
             this.inputStream = serialInputStream;
         }
 
@@ -349,9 +366,6 @@ public class MyPayService extends Service implements SerialPortCallback {
             }
         }
 
-        public void setKeep(boolean keep) {
-            this.keep.set(keep);
-        }
     }
 
     private static String toASCII(int value) {
@@ -409,16 +423,28 @@ public class MyPayService extends Service implements SerialPortCallback {
             writeHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
-                    int port = msg.arg1;
-                    byte[] data = (byte[]) msg.obj;
-                    if (port <= serialPorts.size() - 1) {
-                        UsbSerialDevice serialDevice = serialPorts.get(port);
-//                        serialDevice.write(data);
-                        serialDevice.getOutputStream().write(data);
+                    switch (msg.what) {
+                        case WHAT_CLOSE_IO:
+                            for (UsbSerialDevice serialPort : serialPorts) {
+                                if (serialPort != null && serialPort.isOpen()) {
+                                    serialPort.close();
+                                }
+                            }
+                            break;
+                        default:
+                            int port = msg.arg1;
+                            byte[] data = (byte[]) msg.obj;
+                            if (port <= serialPorts.size() - 1) {
+                                UsbSerialDevice serialDevice = serialPorts.get(port);
+                                serialDevice.getOutputStream().write(data);
+                            }
                     }
+
                 }
             };
             Looper.loop();
         }
     }
+
+
 }

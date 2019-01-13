@@ -50,4 +50,6 @@
     <string name="ip_unvalid">请输入正确的IP地址</string>
     <string name="port_unvalid">请输入0到65535的整数</string>
     <string name="port_example">3445</string>
+    <string name="chu_bi_shi_bai">用户投币失败</string>
+    <string name="have_click">正在收款状态，请不要重复点击</string>
 </resources>
