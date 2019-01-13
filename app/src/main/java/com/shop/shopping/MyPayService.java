@@ -37,6 +37,7 @@ import cn.droidlover.xdroidmvp.shopping.R;
 public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
+    private static final int WHAT_DO_START_PAY = 2;
     String TAG = "MyPayService";
     public static final String ACTION_USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
     public static final String ACTION_USB_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED";
@@ -50,6 +51,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static int PAYOUT_BIG_COUNT = 200;//退币器退币的最大币值 2欧元
     private static int PAYOUT_SMALL_PORT = 0;
     private static int PAYOUT_BIG_PORT = 1;
+
 
     private List<UsbSerialDevice> serialPorts;
 
@@ -67,6 +69,9 @@ public class MyPayService extends Service implements SerialPortCallback {
     private String yingBiQiSerialName = "/dev/ttyS3";
     private volatile Handler mHandler;
     private volatile SerialPort zhiBiQiSerailPort, yingBiQiSerailPort;
+    private Handler innerHandler;
+    private Handler zhiBiQiWriteHandler;
+    private Handler yingBiQiWriteHandler;
 
 
     public int checkDeviceState() {
@@ -157,6 +162,9 @@ public class MyPayService extends Service implements SerialPortCallback {
             message.what = PayState.START_PAY;
             message.sendToTarget();
         }
+        if (innerHandler != null) {
+            innerHandler.obtainMessage(WHAT_DO_START_PAY, moneyCount).sendToTarget();
+        }
 
     }
 
@@ -208,10 +216,26 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     }
 
+    @SuppressLint("HandlerLeak")
     @Override
     public void onCreate() {
         this.context = this;
         MyPayService.SERVICE_CONNECTED = true;
+        innerHandler = new Handler() {
+            int count = 0;
+
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case WHAT_DO_START_PAY:
+                        count = (int) msg.obj;
+                        break;
+                    default:
+                }
+
+            }
+        };
         setFilter();
         builder = SerialPortBuilder.createSerialPortBuilder(this);
         boolean ret = builder.openSerialPorts(context, BAUD_RATE,
@@ -224,7 +248,7 @@ public class MyPayService extends Service implements SerialPortCallback {
             public void run() {
                 try {
                     zhiBiQiSerailPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 8, 1, 'e');
-                    new SerailWriteThread(zhiBiQiSerailPort.getOutputStream(), null).start();
+                    new SerailWriteThread(zhiBiQiSerailPort.getOutputStream(), zhiBiQiWriteHandler).start();
                     new SerailReadThread(zhiBiQiSerailPort.getInputStream(), zhiBiQiSerialName).start();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -232,7 +256,7 @@ public class MyPayService extends Service implements SerialPortCallback {
 
                 try {
                     yingBiQiSerailPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 'e');
-                    new SerailWriteThread(yingBiQiSerailPort.getOutputStream(), null).start();
+                    new SerailWriteThread(yingBiQiSerailPort.getOutputStream(), yingBiQiWriteHandler).start();
                     new SerailReadThread(yingBiQiSerailPort.getInputStream(), yingBiQiSerialName).start();
 
                 } catch (IOException e) {
@@ -348,7 +372,6 @@ public class MyPayService extends Service implements SerialPortCallback {
     private class ReadThreadCOM extends Thread {
         private AtomicBoolean keep = new AtomicBoolean(true);
         private SerialInputStream inputStream;
-
         public ReadThreadCOM(int port, SerialInputStream serialInputStream) {
             this.inputStream = serialInputStream;
         }
