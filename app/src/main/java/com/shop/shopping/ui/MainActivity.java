@@ -25,7 +25,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.classic.common.MultipleStatusView;
-import com.google.gson.Gson;
 import com.shop.shopping.MyPayService;
 import com.shop.shopping.adapter.adapter.GoodAdapter;
 import com.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;

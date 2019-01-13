@@ -58,7 +58,6 @@ public class MyPayService extends Service implements SerialPortCallback {
     private SerailWriteThread zhiBiQiWriteThread, yingBiWriteThread;
     private Handler zhiBiQiHandler, yingBiHandler;
 
-    private IBinder binder = new UsbBinder();
     private String zhiBiQiSerialName = "/dev/ttyS1";
 
     private String yingBiQiSerialName = "/dev/ttyS3";
@@ -124,7 +123,8 @@ public class MyPayService extends Service implements SerialPortCallback {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        write(new byte[]{0x2}, 0);
+        write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) 2), 0);
+        write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) 5), 1);
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
@@ -154,7 +154,8 @@ public class MyPayService extends Service implements SerialPortCallback {
             public void run() {
                 SerialPort serialPort = null;
                 try {
-                    serialPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 2, 8, 1);
+//                    serialPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 2, 8, 1);
+                    serialPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 8, 1, 'e');
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -162,13 +163,13 @@ public class MyPayService extends Service implements SerialPortCallback {
                 new SerailWriteThread(serialPort.getOutputStream(), null).start();
                 new SerailReadThread(serialPort.getInputStream(), zhiBiQiSerialName).start();
 
-                try {
-                    serialPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                new SerailWriteThread(serialPort.getOutputStream(), null).start();
-                new SerailReadThread(serialPort.getInputStream(), yingBiQiSerialName).start();
+//                try {
+//                    serialPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 1);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                new SerailWriteThread(serialPort.getOutputStream(), null).start();
+//                new SerailReadThread(serialPort.getInputStream(), yingBiQiSerialName).start();
             }
         }).start();
 
@@ -179,7 +180,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return new PayBinder(this);
     }
 
     @Override
@@ -213,9 +214,15 @@ public class MyPayService extends Service implements SerialPortCallback {
         registerReceiver(usbReceiver, filter);
     }
 
-    public class UsbBinder extends Binder {
+    public static class PayBinder extends Binder {
+        MyPayService service;
+
+        public PayBinder(MyPayService service) {
+            this.service = service;
+        }
+
         public MyPayService getService() {
-            return MyPayService.this;
+            return service;
         }
     }
 
@@ -308,9 +315,10 @@ public class MyPayService extends Service implements SerialPortCallback {
         @SuppressLint("HandlerLeak")
         public void run() {
             try {
+                Thread.sleep(5000);
                 outputStream.write(0x2);
                 outputStream.flush();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             Looper.prepare();

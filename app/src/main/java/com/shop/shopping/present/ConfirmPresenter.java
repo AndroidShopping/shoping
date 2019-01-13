@@ -16,9 +16,9 @@ import cn.droidlover.xdroidmvp.net.XApi;
 
 
 public class ConfirmPresenter extends XPresent<SubmitCoinActivity> {
-    public void getShopProductList(String orderId) {
+    public void confirmOrder(String orderId) {
         getV().onStartLoading();
-        Api.getShopService().confirmOrder(orderId)
+        Api.getShopService().confirmOrder(orderId,2)
                 .compose(XApi.<ConfirmOrderResult>getApiTransformer())
                 .compose(XApi.<ConfirmOrderResult>getScheduler())
                 .compose(getV().<ConfirmOrderResult>bindToLifecycle())

@@ -1,22 +1,4 @@
-/*
- * Copyright 2009 Cedric Priscal
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package android_serialport_api;
-
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -26,31 +8,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class SerialPort {
+import android.util.Log;
 
+public class SerialPort {
     private static final String TAG = "SerialPort";
 
-    /*
-     * Do not remove or rename the field mFd: it is used by native method close();
-     */
     private FileDescriptor mFd;
     private FileInputStream mFileInputStream;
     private FileOutputStream mFileOutputStream;
-
-    public SerialPort(File device) throws SecurityException, IOException {
-        this(device, 9600, 0, 8, 1);
-    }
-
-    /**
-     * 打开串口
-     *
-     * @param device   串口设备文件
-     * @param baudrate 波特率，一般是9600
-     * @param parity   奇偶校验，0 None, 1 Odd, 2 Even
-     * @param dataBits 数据位，5 - 8
-     * @param stopBit  停止位，1 或 2
+    /***
+     * 构造方法
+     * @param device 串口文件
+     * @param baudrate 波特率
+     * @param dataBits 数据位
+     * @param stopBits 停止位
+     * @param parity   校验位
+     * @throws SecurityException
+     * @throws IOException
      */
-    public SerialPort(File device, int baudrate, int parity, int dataBits, int stopBit) throws SecurityException, IOException {
+    public SerialPort(File device, int baudrate, int dataBits,int stopBits,char parity)
+            throws SecurityException, IOException {
+
         /* Check access permission */
         if (!device.canRead() || !device.canWrite()) {
             try {
@@ -70,7 +48,7 @@ public class SerialPort {
             }
         }
 
-        mFd = open(device.getAbsolutePath(), baudrate, parity, dataBits, stopBit);
+        mFd = open(device.getAbsolutePath(), baudrate, dataBits,stopBits,parity);
         if (mFd == null) {
             Log.e(TAG, "native open returns null");
             throw new IOException();
@@ -88,16 +66,14 @@ public class SerialPort {
         return mFileOutputStream;
     }
 
-    // JNI
-    private native static FileDescriptor open(String path, int baudrate, int parity, int dataBits, int stopBit);
+
+    // 调用JNI中 打开方法的声明 
+    private native static FileDescriptor open(String path, int baudrate,
+                                              int dataBits,int stopBits,char parity);
 
     public native void close();
 
     static {
-        try {
-            System.loadLibrary("serial_port");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        System.loadLibrary("serial_port");
     }
 }

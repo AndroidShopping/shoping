@@ -11,6 +11,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.MultiTransformation;
@@ -40,6 +41,7 @@ public class GlideLoader implements ILoader {
     }
 
     private RequestManager getRequestManager(Context context) {
+        GlideBuilder builder = new GlideBuilder();
         if (context instanceof Activity) {
             return Glide.with((Activity) context);
         }

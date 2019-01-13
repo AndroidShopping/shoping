@@ -27,5 +27,5 @@ public interface ShopService {
 
     @FormUrlEncoded
     @POST("/shop/updateShopOrder")
-    Flowable<ConfirmOrderResult> confirmOrder(@Field(value = "id") String id);
+    Flowable<ConfirmOrderResult> confirmOrder(@Field(value = "id") String id, @Field(value = "orderStatus") int state);
 }
