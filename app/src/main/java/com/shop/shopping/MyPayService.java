@@ -43,6 +43,12 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final int BAUD_RATE = 9600; // BaudRate. Change this value if you need
     public static boolean SERVICE_CONNECTED = false;
+    public static final int STATE_CHU_BI_ERROR = 1;
+    public static final int STATE_OK = 2;
+    private static int PAYOUT_SMALL_COUNT = 50;//退币器的最小币值 5欧角
+    private static int PAYOUT_BIG_COUNT = 200;//退币器退币的最大币值 2欧元
+    private static int PAYOUT_SMALL_PORT = 0;
+    private static int PAYOUT_BIG_PORT = 1;
 
     private List<UsbSerialDevice> serialPorts;
 
@@ -61,7 +67,56 @@ public class MyPayService extends Service implements SerialPortCallback {
     private String zhiBiQiSerialName = "/dev/ttyS1";
 
     private String yingBiQiSerialName = "/dev/ttyS3";
-    private Handler mHandler;
+    private volatile Handler mHandler;
+
+    public int checkDeviceState() {
+        if (serialPorts == null || serialPorts.size() != 2) {
+            return STATE_CHU_BI_ERROR;
+
+        }
+        return STATE_OK;
+
+    }
+
+    /**
+     * 退款接口
+     *
+     * @param moneyCount 需要退款的额度，单位是欧分
+     */
+    private void doPayOut(int moneyCount) {
+        int payoutSmallCount = 0;
+        int payoutBigCount = 0;
+        boolean hasFount = false;
+        for (int i = 0; i < 256; i++) {
+            payoutSmallCount = i;
+            for (int j = 0; j < 256; j++) {
+                int count = i * PAYOUT_SMALL_COUNT + j * PAYOUT_BIG_COUNT;
+                if (count == moneyCount) {
+                    hasFount = true;
+                    payoutBigCount = j;
+                    break;
+                }
+                if (count > moneyCount) {
+                    break;
+                }
+            }
+            if (hasFount) {
+                break;
+            }
+
+        }
+
+        if (payoutBigCount != 0) {
+            write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutBigCount), PAYOUT_BIG_PORT);
+        }
+
+        if (payoutSmallCount != 0) {
+            write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutSmallCount), PAYOUT_SMALL_PORT);
+        }
+
+
+    }
+
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent arg1) {
@@ -90,10 +145,10 @@ public class MyPayService extends Service implements SerialPortCallback {
         }
     };
 
+
     @Override
     public void onSerialPortsDetected(List<UsbSerialDevice> serialPorts) {
         this.serialPorts = serialPorts;
-
         if (serialPorts.size() == 0)
             return;
 
@@ -118,19 +173,25 @@ public class MyPayService extends Service implements SerialPortCallback {
                     serialPorts.get(index).getInputStream());
             readThreadCOM2.start();
         }
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) 2), 0);
-        write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) 5), 1);
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        write(new byte[]{0x30}, 0);
+//        try {
+//            Thread.sleep(500);
+//            doPayOut(50);
+//            Thread.sleep(10000);
+//            doPayOut(100);
+//            Thread.sleep(10000);
+//            doPayOut(200);
+//            Thread.sleep(10000);
+//            doPayOut(250);
+//            Thread.sleep(10000);
+//            doPayOut(300);
+//            Thread.sleep(10000);
+//            doPayOut(350);
+//            Thread.sleep(10000);
+//            doPayOut(4000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
     }
 
     @Override

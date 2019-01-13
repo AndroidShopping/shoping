@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 
@@ -29,8 +31,15 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     @BindView(R.id.submit_view)
     Button submitView;
     private ServiceConnection conn;
-    MyPayService service;
     private MyPayService myPayService;
+    private H handler;
+
+    private static final class H extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+        }
+    }
 
     public static void start(Context context, ShopResult result, String orderId) {
         Intent intent = new Intent(context, SubmitCoinActivity.class);
@@ -79,6 +88,7 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 myPayService = ((MyPayService.PayBinder) service).getService();
+                myPayService.setHandler(new H());
             }
 
             @Override
@@ -92,6 +102,8 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        myPayService.setHandler(null);
+        handler = null;
         unbindService(conn);
     }
 
@@ -112,4 +124,6 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
         PrintOrderActivity.start(SubmitCoinActivity.this,
                 result, intent.getStringExtra(ORDER_ID), 123);
     }
+
+
 }
