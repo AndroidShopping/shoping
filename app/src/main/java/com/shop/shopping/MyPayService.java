@@ -61,6 +61,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     private IBinder binder = new UsbBinder();
     private String zhiBiQiSerialName = "/dev/ttyS1";
 
+    private String yingBiQiSerialName = "/dev/ttyS3";
     private Handler mHandler;
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
         @Override
@@ -148,34 +149,30 @@ public class MyPayService extends Service implements SerialPortCallback {
                 0);
         SerialPortFinder finder = new SerialPortFinder();
         String[] allDevicesPath = finder.getAllDevicesPath();
-        for (String s : allDevicesPath) {
-            try {
-
-                if (zhiBiQiSerialName.toLowerCase().equals(s.toLowerCase())) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            SerialPort serialPort = null;
-                            try {
-                                serialPort = new SerialPort(new File(s), 9600, 2,8,1);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            Handler writeHandler = null;
-                            new SerailWriteThread(serialPort.getOutputStream(), null).start();
-                            new SerailReadThread(serialPort.getInputStream(), s).start();
-                        }
-                    }).start();
-
-                } else {
-                    writeHandler = null;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SerialPort serialPort = null;
+                try {
+                    serialPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 2, 8, 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                Handler writeHandler = null;
+                new SerailWriteThread(serialPort.getOutputStream(), null).start();
+                new SerailReadThread(serialPort.getInputStream(), zhiBiQiSerialName).start();
 
-
-            } catch (Exception e) {
-                e.printStackTrace();
+                try {
+                    serialPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                new SerailWriteThread(serialPort.getOutputStream(), null).start();
+                new SerailReadThread(serialPort.getInputStream(), yingBiQiSerialName).start();
             }
-        }
+        }).start();
+
+
     }
 
 
