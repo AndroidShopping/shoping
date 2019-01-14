@@ -39,7 +39,6 @@ public class SerialPortBuilder {
 
     private InitSerialPortThread initSerialPortThread;
 
-    private int baudRate, dataBits, stopBits, parity, flowControl;
     private int mode = 0;
 
     private boolean broadcastRegistered = false;
@@ -115,13 +114,7 @@ public class SerialPortBuilder {
         return true;
     }
 
-    public boolean openSerialPorts(Context context, int baudRate, int dataBits,
-            int stopBits, int parity, int flowControl){
-        this.baudRate = baudRate;
-        this.dataBits = dataBits;
-        this.stopBits = stopBits;
-        this.parity = parity;
-        this.flowControl = flowControl;
+    public boolean openSerialPorts(Context context){
         this.mode = MODE_OPEN;
         return getSerialPorts(context);
     }

@@ -24,8 +24,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import android_serialport_api.SerialPort;
-
 public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
@@ -41,13 +39,11 @@ public class MyPayService extends Service implements SerialPortCallback {
     public static final int STATE_OK = 2;
     private static int PAYOUT_SMALL_COUNT = 50;//退币器的最小币值 5欧角
     private static int PAYOUT_BIG_COUNT = 200;//退币器退币的最大币值 2欧元
-    private static int PAYOUT_SMALL_PORT = 0;
-    private static int PAYOUT_BIG_PORT = 1;
 
-    private static int TUI_BI_QI_2_YUAN_PORT = 3;
+    private static int TUI_BI_QI_2_YUAN_PORT = 0;
     private static int YING_BI_SHOU_BI_PORT = 0;
+    private static int ZHI_BI_QI_SHOU_BI_PORT = 0;
     private static int TUI_BI_QI_5_MAO_PORT = 0;
-    private static int ZHI_BI_QI_SHOU_BI_PORT = 2;
 
 
     private List<UsbSerialDevice> serialPorts;
@@ -58,15 +54,8 @@ public class MyPayService extends Service implements SerialPortCallback {
     private Handler writeHandler;
     private WriteThread writeThread;
 
-
-    private String zhiBiQiSerialName = "/dev/ttyS1";
-
-    private String yingBiQiSerialName = "/dev/ttyS3";
     private volatile Handler mHandler;
-    private volatile SerialPort zhiBiQiSerailPort, yingBiQiSerailPort;
     private Handler innerHandler;
-    private Handler zhiBiQiWriteHandler;
-    private Handler yingBiQiWriteHandler;
 
 
     public int checkDeviceState() {
@@ -107,11 +96,11 @@ public class MyPayService extends Service implements SerialPortCallback {
         }
 
         if (payoutBigCount != 0) {
-            write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutBigCount), PAYOUT_BIG_PORT);
+            write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutBigCount), TUI_BI_QI_2_YUAN_PORT);
         }
 
         if (payoutSmallCount != 0) {
-            write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutSmallCount), PAYOUT_SMALL_PORT);
+            write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutSmallCount), TUI_BI_QI_5_MAO_PORT);
         }
 
 
@@ -158,26 +147,42 @@ public class MyPayService extends Service implements SerialPortCallback {
 //        if (serialPorts.size() < 3) {
 //            return;
 //        }
-        UsbSerialDevice yinbBiShouBiQi = serialPorts.get(YING_BI_SHOU_BI_PORT);
-        configUsbDevice(yinbBiShouBiQi, 19200, 8, 0,
-                0, 0, YING_BI_SHOU_BI_PORT);
+//        UsbSerialDevice yinbBiShouBiQi = serialPorts.get(YING_BI_SHOU_BI_PORT);
+//        configUsbDevice(yinbBiShouBiQi, 19200, 8, 0,
+//                0, 0, YING_BI_SHOU_BI_PORT);
 //        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600, 8, 0,
 //                2, 0, ZHI_BI_QI_SHOU_BI_PORT);
 //
 //        configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT), 9600, 8, 0,
 //                2, 0, TUI_BI_QI_5_MAO_PORT);
-//        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600, 8, 0,
-//                2, 0, TUI_BI_QI_2_YUAN_PORT);
-        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, yinbBiShouBiQi.getInputStream()).start();
+        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600, 8, 0,
+                2, 0, TUI_BI_QI_2_YUAN_PORT);
+//        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, yinbBiShouBiQi.getInputStream()).start();
 //        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
 //        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
-//        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
         if (writeThread == null) {
             writeThread = new WriteThread();
             writeThread.start();
         }
+        try {
+            Thread.sleep(5000);
+            doPayOut(400);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
+    }
+
+    private void resetAll() {
+        //纸币器重置
+        write(new byte[]{0x30}, ZHI_BI_QI_SHOU_BI_PORT);
+        //禁止使能纸币起
+        write(new byte[]{0x02, 0x0d, 0x0a}, YING_BI_SHOU_BI_PORT);
+        byte[] bytes = TuibiOperation.buildRequest((byte) 0x12, (byte) 0x00);
+        write(bytes, TUI_BI_QI_2_YUAN_PORT);
+        write(bytes, TUI_BI_QI_5_MAO_PORT);
     }
 
     @SuppressLint("HandlerLeak")
@@ -208,11 +213,7 @@ public class MyPayService extends Service implements SerialPortCallback {
             }
         };
         builder = SerialPortBuilder.createSerialPortBuilder(this);
-        boolean ret = builder.openSerialPorts(context, BAUD_RATE,
-                8,
-                0,
-                2,
-                0);
+        boolean ret = builder.openSerialPorts(context);
 
     }
 
@@ -285,7 +286,11 @@ public class MyPayService extends Service implements SerialPortCallback {
                     if (available != 0) {
                         byte[] data = new byte[available];
                         inputStream.read(data);
+                        Log.d(TAG, "handleMessage:  = " +
+                                TextUtils.printHexString(data));
                         innerHandler.obtainMessage(whatForReadData, data).sendToTarget();
+                    } else {
+                        Log.d(TAG, "no data receive:  = ");
                     }
 
                 } catch (IOException e) {
