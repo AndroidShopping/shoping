@@ -2,12 +2,8 @@ package com.shop.shopping;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,34 +11,30 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.felhr.usbserial.SerialInputStream;
 import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
 import com.felhr.usbserial.UsbSerialDevice;
 import com.shop.shopping.entity.PayState;
+import com.shop.shopping.utils.TextUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import android_serialport_api.SerialPort;
-import cn.droidlover.xdroidmvp.shopping.BuildConfig;
-import cn.droidlover.xdroidmvp.shopping.R;
 
 public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
     private static final int WHAT_DO_START_PAY = 2;
+    private static final int WHAT_ON_ZHI_BI_QI_READ_DATA = 3;
+    private static final int WHAT_ON_YING_BI_QI_READ_DATA = 4;
+    private static final int WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA = 5;
+    private static final int WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA = 6;
     String TAG = "MyPayService";
-    public static final String ACTION_USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
-    public static final String ACTION_USB_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED";
-    public static final String ACTION_USB_DISCONNECTED = "com.felhr.usbservice.USB_DISCONNECTED";
-    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final int BAUD_RATE = 9600; // BaudRate. Change this value if you need
     public static boolean SERVICE_CONNECTED = false;
     public static final int STATE_CHU_BI_ERROR = 1;
@@ -52,6 +44,11 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static int PAYOUT_SMALL_PORT = 0;
     private static int PAYOUT_BIG_PORT = 1;
 
+    private static int TUI_BI_QI_2_YUAN_PORT = 3;
+    private static int YING_BI_SHOU_BI_PORT = 0;
+    private static int TUI_BI_QI_5_MAO_PORT = 0;
+    private static int ZHI_BI_QI_SHOU_BI_PORT = 2;
+
 
     private List<UsbSerialDevice> serialPorts;
 
@@ -60,8 +57,6 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     private Handler writeHandler;
     private WriteThread writeThread;
-
-    private ReadThreadCOM readThreadCOM1, readThreadCOM2;
 
 
     private String zhiBiQiSerialName = "/dev/ttyS1";
@@ -122,34 +117,23 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     }
 
-    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context arg0, Intent arg1) {
-            if (arg1.getAction().equals(ACTION_USB_ATTACHED)) {
-                boolean ret = builder.openSerialPorts(context, BAUD_RATE,
-                        8,
-                        0,
-                        2,
-                        0);
-                if (!ret)
-                    Toast.makeText(context, R.string.cant, Toast.LENGTH_SHORT).show();
-            } else if (arg1.getAction().equals(ACTION_USB_DETACHED)) {
-
-                UsbDevice usbDevice = arg1.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                boolean ret = builder.disconnectDevice(usbDevice);
-
-                if (ret)
-                    Toast.makeText(context, R.string.usb_dis, Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(context, R.string.dont_usb, Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent(ACTION_USB_DISCONNECTED);
-                arg0.sendBroadcast(intent);
-
+    UsbSerialDevice configUsbDevice(UsbSerialDevice device, int baudRate, int dataBits,
+                                    int stopBits, int parity, int flowControl, int port) {
+        if (!device.isOpen) {
+            if (device.syncOpen()) {
+                device.setBaudRate(baudRate);
+                device.setDataBits(dataBits);
+                device.setStopBits(stopBits);
+                device.setParity(parity);
+                device.setFlowControl(flowControl);
+                device.setPortName(UsbSerialDevice.COM_PORT + port);
             }
         }
-    };
 
+
+        return device;
+
+    }
 
     /**
      * 用户开始支付接口
@@ -171,48 +155,28 @@ public class MyPayService extends Service implements SerialPortCallback {
     @Override
     public void onSerialPortsDetected(List<UsbSerialDevice> serialPorts) {
         this.serialPorts = serialPorts;
-        if (serialPorts.size() == 0)
-            return;
-
+//        if (serialPorts.size() < 3) {
+//            return;
+//        }
+        UsbSerialDevice yinbBiShouBiQi = serialPorts.get(YING_BI_SHOU_BI_PORT);
+        configUsbDevice(yinbBiShouBiQi, 19200, 8, 0,
+                0, 0, YING_BI_SHOU_BI_PORT);
+//        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600, 8, 0,
+//                2, 0, ZHI_BI_QI_SHOU_BI_PORT);
+//
+//        configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT), 9600, 8, 0,
+//                2, 0, TUI_BI_QI_5_MAO_PORT);
+//        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600, 8, 0,
+//                2, 0, TUI_BI_QI_2_YUAN_PORT);
+        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, yinbBiShouBiQi.getInputStream()).start();
+//        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
+//        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
+//        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
         if (writeThread == null) {
             writeThread = new WriteThread();
             writeThread.start();
         }
 
-        int index = 0;
-
-        if (readThreadCOM1 == null && index <= serialPorts.size() - 1
-                && serialPorts.get(index).isOpen()) {
-            readThreadCOM1 = new ReadThreadCOM(index,
-                    serialPorts.get(index).getInputStream());
-            readThreadCOM1.start();
-        }
-
-        index++;
-        if (readThreadCOM2 == null && index <= serialPorts.size() - 1
-                && serialPorts.get(index).isOpen()) {
-            readThreadCOM2 = new ReadThreadCOM(index,
-                    serialPorts.get(index).getInputStream());
-            readThreadCOM2.start();
-        }
-//        try {
-//            Thread.sleep(500);
-//            doPayOut(50);
-//            Thread.sleep(10000);
-//            doPayOut(100);
-//            Thread.sleep(10000);
-//            doPayOut(200);
-//            Thread.sleep(10000);
-//            doPayOut(250);
-//            Thread.sleep(10000);
-//            doPayOut(300);
-//            Thread.sleep(10000);
-//            doPayOut(350);
-//            Thread.sleep(10000);
-//            doPayOut(4000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 
     }
 
@@ -231,41 +195,24 @@ public class MyPayService extends Service implements SerialPortCallback {
                     case WHAT_DO_START_PAY:
                         count = (int) msg.obj;
                         break;
+//                    case WHAT_ON_ZHI_BI_QI_READ_DATA:
                     default:
+                        byte[] data = (byte[]) msg.obj;
+                        Log.d(TAG, "handleMessage:  = " +
+                                TextUtils.printHexString(data));
+                        break;
+                    case WHAT_ON_YING_BI_QI_READ_DATA:
+                        break;
                 }
 
             }
         };
-        setFilter();
         builder = SerialPortBuilder.createSerialPortBuilder(this);
         boolean ret = builder.openSerialPorts(context, BAUD_RATE,
                 8,
                 0,
                 2,
                 0);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    zhiBiQiSerailPort = new SerialPort(new File(zhiBiQiSerialName), 9600, 8, 1, 'e');
-                    new SerailWriteThread(zhiBiQiSerailPort.getOutputStream(), zhiBiQiWriteHandler).start();
-                    new SerailReadThread(zhiBiQiSerailPort.getInputStream(), zhiBiQiSerialName).start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    yingBiQiSerailPort = new SerialPort(new File(yingBiQiSerialName), 9600, 2, 8, 'e');
-                    new SerailWriteThread(yingBiQiSerailPort.getOutputStream(), yingBiQiWriteHandler).start();
-                    new SerailReadThread(yingBiQiSerailPort.getInputStream(), yingBiQiSerialName).start();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }).start();
-
 
     }
 
@@ -305,14 +252,6 @@ public class MyPayService extends Service implements SerialPortCallback {
     }
 
 
-    private void setFilter() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_USB_PERMISSION);
-        filter.addAction(ACTION_USB_DETACHED);
-        filter.addAction(ACTION_USB_ATTACHED);
-        registerReceiver(usbReceiver, filter);
-    }
-
     public static class PayBinder extends Binder {
         MyPayService service;
 
@@ -325,14 +264,14 @@ public class MyPayService extends Service implements SerialPortCallback {
         }
     }
 
-    private class SerailReadThread extends Thread {
+    private class ReadThreadCOM extends Thread {
         private AtomicBoolean keep = new AtomicBoolean(true);
-        private InputStream inputStream;
-        private String serialName;
+        private SerialInputStream inputStream;
+        private int whatForReadData;
 
-        public SerailReadThread(InputStream inputStream, String serialName) {
-            this.inputStream = inputStream;
-            this.serialName = serialName;
+        public ReadThreadCOM(int whatRead, SerialInputStream serialInputStream) {
+            this.inputStream = serialInputStream;
+            whatForReadData = whatRead;
         }
 
         @Override
@@ -341,50 +280,16 @@ public class MyPayService extends Service implements SerialPortCallback {
                 if (inputStream == null) {
                     return;
                 }
-                if (BuildConfig.DEBUG) {
-//                    Log.d(TAG, "SerailReadThread run: serialName =" + serialName);
-                }
-                int value = 0;
                 try {
-                    value = inputStream.read();
-                    if (value != -1) {
-                        String str = toASCII(value);
-                        Log.d(TAG, "SerailReadThread run: " + value);
+                    int available = inputStream.available();
+                    if (available != 0) {
+                        byte[] data = new byte[available];
+                        inputStream.read(data);
+                        innerHandler.obtainMessage(whatForReadData, data).sendToTarget();
                     }
+
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-
-            }
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void setKeep(boolean keep) {
-            this.keep.set(keep);
-        }
-
-    }
-
-    private class ReadThreadCOM extends Thread {
-        private AtomicBoolean keep = new AtomicBoolean(true);
-        private SerialInputStream inputStream;
-        public ReadThreadCOM(int port, SerialInputStream serialInputStream) {
-            this.inputStream = serialInputStream;
-        }
-
-        @Override
-        public void run() {
-            while (keep.get()) {
-                if (inputStream == null)
-                    return;
-                int value = inputStream.read();
-                if (value != -1) {
-                    String str = toASCII(value);
-//                    mHandler.obtainMessage(SYNC_READ, port, 0, str).sendToTarget();
                 }
             }
         }
