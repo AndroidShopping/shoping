@@ -19,6 +19,8 @@ import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 import com.shop.shopping.entity.PayState;
 import com.shop.shopping.utils.TextUtils;
+import com.shop.shopping.utils.YingBiQiUtils;
+import com.shop.shopping.utils.ZhiBiQiUtils;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,9 +41,9 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static int PAYOUT_SMALL_COUNT = 50;//退币器的最小币值 5欧角
     private static int PAYOUT_BIG_COUNT = 200;//退币器退币的最大币值 2欧元
 
-    private static int TUI_BI_QI_2_YUAN_PORT = 0;
-    private static int YING_BI_SHOU_BI_PORT = 0;
-    private static int ZHI_BI_QI_SHOU_BI_PORT = 0;
+    private static int TUI_BI_QI_2_YUAN_PORT = 3;
+    private static int YING_BI_SHOU_BI_PORT = 2;
+    private static int ZHI_BI_QI_SHOU_BI_PORT = 1;
     private static int TUI_BI_QI_5_MAO_PORT = 0;
 
 
@@ -146,22 +148,32 @@ public class MyPayService extends Service implements SerialPortCallback {
 //        if (serialPorts.size() < 3) {
 //            return;
 //        }
-//        UsbSerialDevice yinbBiShouBiQi = serialPorts.get(YING_BI_SHOU_BI_PORT);
-//        configUsbDevice(yinbBiShouBiQi, 19200, 8, 0,
-//                0, 0, YING_BI_SHOU_BI_PORT);
-//        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600, 8, 0,
-//                2, 0, ZHI_BI_QI_SHOU_BI_PORT);
-//
-//        configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT), 9600, 8, 0,
-//                2, 0, TUI_BI_QI_5_MAO_PORT);
-        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600,
+        configUsbDevice(serialPorts.get(YING_BI_SHOU_BI_PORT), 19200,
+                UsbSerialInterface.DATA_BITS_8,
+                UsbSerialInterface.STOP_BITS_1,
+                UsbSerialInterface.PARITY_NONE,
+                UsbSerialInterface.FLOW_CONTROL_OFF, YING_BI_SHOU_BI_PORT);
+        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600,
                 UsbSerialInterface.DATA_BITS_8,
                 UsbSerialInterface.STOP_BITS_1,
                 UsbSerialInterface.PARITY_EVEN,
-                UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
-//        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, yinbBiShouBiQi.getInputStream()).start();
-//        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
-//        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
+                UsbSerialInterface.FLOW_CONTROL_OFF, ZHI_BI_QI_SHOU_BI_PORT);
+
+        configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT),
+
+                9600,
+                UsbSerialInterface.DATA_BITS_8,
+                UsbSerialInterface.STOP_BITS_1,
+                UsbSerialInterface.PARITY_EVEN,
+                UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_5_MAO_PORT);
+        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600,
+                UsbSerialInterface.DATA_BITS_8,
+                UsbSerialInterface.STOP_BITS_1,
+                UsbSerialInterface.PARITY_EVEN,
+                UsbSerialInterface.FLOW_CONTROL_OFF, ZHI_BI_QI_SHOU_BI_PORT);
+        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
         new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
         if (writeThread == null) {
             writeThread = new WriteThread();
@@ -192,22 +204,116 @@ public class MyPayService extends Service implements SerialPortCallback {
         MyPayService.SERVICE_CONNECTED = true;
         innerHandler = new Handler() {
             int count = 0;
+            boolean hasPayCompelete = false;
+            int currentReceiveMoney = 0;
 
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case WHAT_DO_START_PAY:
+                        hasPayCompelete = false;
                         count = (int) msg.obj;
+                        currentReceiveMoney = 0;
+                        write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
+                        write(new byte[]{'Y', 'D', 'M', 0x01, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
                         break;
-//                    case WHAT_ON_ZHI_BI_QI_READ_DATA:
-                    default:
+                    case WHAT_ON_ZHI_BI_QI_READ_DATA:
                         byte[] data = (byte[]) msg.obj;
-                        Log.d(TAG, "handleMessage:  = " +
-                                TextUtils.printHexString(data));
+                        if (data != null) {
+                            Log.d(TAG, "handleMessage:  = " +
+                                    TextUtils.printHexString(data));
+                            if (ZhiBiQiUtils.isReceiveMoney(data)) {
+                                /**
+                                 * 当前收到了纸币
+                                 */
+                                int receiveMoney = ZhiBiQiUtils.convertMoneyTOCent(data);
+                                if (hasPayCompelete) {
+                                    /**
+                                     * 拒收，且进入禁能状态
+                                     */
+                                    write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
+                                    write(new byte[]{0x5e}, ZHI_BI_QI_SHOU_BI_PORT);
+                                } else {
+                                    /**
+                                     * 增加收款额
+                                     */
+                                    currentReceiveMoney += receiveMoney;
+                                    if (currentReceiveMoney >= count) {
+                                        hasPayCompelete = true;
+                                        /**
+                                         * 拒收，且进入禁能状态
+                                         */
+                                        write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        doResetShouBiqi();
+                                        if (currentReceiveMoney > count) {
+                                            /**
+                                             * 需要退币
+                                             */
+                                            doPayOut(currentReceiveMoney - count);
+                                        }
+                                        if (mHandler != null) {
+                                            mHandler.obtainMessage(PayState.PAY_OK).sendToTarget();
+                                        }
+
+                                    } else {
+                                        write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
+                                    }
+                                }
+                            }
+                        }
+
                         break;
                     case WHAT_ON_YING_BI_QI_READ_DATA:
+                        data = (byte[]) msg.obj;
+                        if (data != null) {
+                            Log.d(TAG, "handleMessage:  = " +
+                                    TextUtils.printHexString(data));
+                            if (YingBiQiUtils.isReceiveMoney(data)) {
+                                /**
+                                 * 当前收到了硬币
+                                 */
+                                int receiveMoney = YingBiQiUtils.getMoney(data);
+                                if (hasPayCompelete) {
+                                    /**
+                                     * 拒收，且进入禁能状态
+                                     */
+                                    write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
+                                    write(new byte[]{'Y', 'D', 'M', 0x02, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
+                                } else {
+                                    /**
+                                     * 增加收款额
+                                     */
+                                    currentReceiveMoney += receiveMoney;
+                                    if (currentReceiveMoney >= count) {
+                                        hasPayCompelete = true;
+                                        /**
+                                         * 拒收，且进入禁能状态
+                                         */
+                                        write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        write(new byte[]{'Y', 'D', 'M', 0x02, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        doResetShouBiqi();
+                                        if (currentReceiveMoney > count) {
+                                            /**
+                                             * 需要退币
+                                             */
+                                            doPayOut(currentReceiveMoney - count);
+                                        }
+                                        if (mHandler != null) {
+                                            mHandler.obtainMessage(PayState.PAY_OK).sendToTarget();
+                                        }
+
+                                    } else {
+//                                        write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
+                                    }
+                                }
+                            }
+                        }
+
                         break;
+                    default:
+
+
                 }
 
             }
@@ -215,6 +321,11 @@ public class MyPayService extends Service implements SerialPortCallback {
         builder = SerialPortBuilder.createSerialPortBuilder(this);
         boolean ret = builder.openSerialPorts(context);
 
+    }
+
+    private void doResetShouBiqi() {
+        write(new byte[]{0x5e}, ZHI_BI_QI_SHOU_BI_PORT);
+        write(new byte[]{'Y', 'D', 'M', 0x02, 0x0d, 0x0a}, TUI_BI_QI_5_MAO_PORT);
     }
 
 
@@ -287,19 +398,20 @@ public class MyPayService extends Service implements SerialPortCallback {
                     byte[] rbuf = new byte[20];
                     len = inputStream.read(rbuf);
                     if (len < 0) {
-                        Log.d(TAG, "Fail to bulkTransfer(read data)");
+                        Log.d(TAG, "read fail");
                         return;
                     }
                     if (len > 0) {
-                        Log.d(TAG, "handleMessage:  = " +
-                                TextUtils.printHexString(rbuf));
                         innerHandler.obtainMessage(whatForReadData, rbuf).sendToTarget();
                     } else {
                         Log.d(TAG, "no data receive:  = ");
                     }
                     try {
                         Thread.sleep(50);
-                        writeHandler.obtainMessage(WHAT_WRITE_DATA, 0, 0, new byte[]{2}).sendToTarget();
+                        if (writeHandler != null) {
+
+                            writeHandler.obtainMessage(WHAT_WRITE_DATA, 0, 0, new byte[]{2}).sendToTarget();
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
