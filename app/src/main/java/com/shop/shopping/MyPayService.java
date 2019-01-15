@@ -16,11 +16,10 @@ import com.felhr.usbserial.SerialInputStream;
 import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
 import com.felhr.usbserial.UsbSerialDevice;
+import com.felhr.usbserial.UsbSerialInterface;
 import com.shop.shopping.entity.PayState;
 import com.shop.shopping.utils.TextUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -155,8 +154,11 @@ public class MyPayService extends Service implements SerialPortCallback {
 //
 //        configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT), 9600, 8, 0,
 //                2, 0, TUI_BI_QI_5_MAO_PORT);
-        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600, 8, 0,
-                2, 0, TUI_BI_QI_2_YUAN_PORT);
+        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600,
+                UsbSerialInterface.DATA_BITS_8,
+                UsbSerialInterface.STOP_BITS_1,
+                UsbSerialInterface.PARITY_EVEN,
+                UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
 //        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, yinbBiShouBiQi.getInputStream()).start();
 //        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
 //        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
@@ -167,11 +169,9 @@ public class MyPayService extends Service implements SerialPortCallback {
         }
         try {
             Thread.sleep(5000);
-            doPayOut(400);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
 
     }
 
@@ -282,18 +282,29 @@ public class MyPayService extends Service implements SerialPortCallback {
                     return;
                 }
                 try {
-                    int available = inputStream.available();
-                    if (available != 0) {
-                        byte[] data = new byte[available];
-                        inputStream.read(data);
+                    int len;
+                    // byte[] rbuf = new byte[4096];
+                    byte[] rbuf = new byte[20];
+                    len = inputStream.read(rbuf);
+                    if (len < 0) {
+                        Log.d(TAG, "Fail to bulkTransfer(read data)");
+                        return;
+                    }
+                    if (len > 0) {
                         Log.d(TAG, "handleMessage:  = " +
-                                TextUtils.printHexString(data));
-                        innerHandler.obtainMessage(whatForReadData, data).sendToTarget();
+                                TextUtils.printHexString(rbuf));
+                        innerHandler.obtainMessage(whatForReadData, rbuf).sendToTarget();
                     } else {
                         Log.d(TAG, "no data receive:  = ");
                     }
+                    try {
+                        Thread.sleep(500);
+                        writeHandler.obtainMessage(WHAT_WRITE_DATA, 0, 0, new byte[]{2}).sendToTarget();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -310,42 +321,6 @@ public class MyPayService extends Service implements SerialPortCallback {
         return builder.toString();
     }
 
-    private class SerailWriteThread extends Thread {
-        OutputStream outputStream;
-        Handler serailHandler;
-
-        public SerailWriteThread(OutputStream stream, Handler handler) {
-            this.outputStream = stream;
-            serailHandler = handler;
-        }
-
-        @Override
-        @SuppressLint("HandlerLeak")
-        public void run() {
-            try {
-                Thread.sleep(5000);
-                outputStream.write(0x2);
-                outputStream.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            Looper.prepare();
-
-            serailHandler = new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    byte[] data = (byte[]) msg.obj;
-                    try {
-                        outputStream.write(data);
-                        outputStream.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            Looper.loop();
-        }
-    }
 
     private class WriteThread extends Thread {
 
