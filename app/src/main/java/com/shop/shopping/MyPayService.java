@@ -12,6 +12,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.felhr.usbserial.BuildConfig;
 import com.felhr.usbserial.SerialInputStream;
 import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
@@ -43,8 +44,8 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     private static int TUI_BI_QI_2_YUAN_PORT = 3;
     private static int YING_BI_SHOU_BI_PORT = 2;
-    private static int ZHI_BI_QI_SHOU_BI_PORT = 1;
-    private static int TUI_BI_QI_5_MAO_PORT = 0;
+    private static int ZHI_BI_QI_SHOU_BI_PORT = 0;
+    private static int TUI_BI_QI_5_MAO_PORT = 1;
 
 
     private List<UsbSerialDevice> serialPorts;
@@ -216,8 +217,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                     case WHAT_ON_ZHI_BI_QI_READ_DATA:
                         byte[] data = (byte[]) msg.obj;
                         if (data != null) {
-                            Log.d(TAG, "handleMessage:  = " +
-                                    TextUtils.printHexString(data));
+
                             if (ZhiBiQiUtils.isReceiveMoney(data)) {
                                 /**
                                  * 当前收到了纸币
@@ -397,6 +397,11 @@ public class MyPayService extends Service implements SerialPortCallback {
                         return;
                     }
                     if (len > 0) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "handleMessage:  = " +
+                                    TextUtils.printHexString(rbuf));
+                            Log.d(TAG, "no data receive:  whatForReadData = " + whatForReadData);
+                        }
                         innerHandler.obtainMessage(whatForReadData, rbuf).sendToTarget();
                     } else {
                         Log.d(TAG, "no data receive:  = ");
