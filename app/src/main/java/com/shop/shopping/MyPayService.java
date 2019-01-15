@@ -298,7 +298,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                         Log.d(TAG, "no data receive:  = ");
                     }
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(50);
                         writeHandler.obtainMessage(WHAT_WRITE_DATA, 0, 0, new byte[]{2}).sendToTarget();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
