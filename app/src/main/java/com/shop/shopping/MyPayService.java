@@ -166,11 +166,11 @@ public class MyPayService extends Service implements SerialPortCallback {
                 UsbSerialInterface.STOP_BITS_1,
                 UsbSerialInterface.PARITY_EVEN,
                 UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_5_MAO_PORT);
-        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600,
+        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600,
                 UsbSerialInterface.DATA_BITS_8,
                 UsbSerialInterface.STOP_BITS_1,
                 UsbSerialInterface.PARITY_EVEN,
-                UsbSerialInterface.FLOW_CONTROL_OFF, ZHI_BI_QI_SHOU_BI_PORT);
+                UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
         new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream()).start();
         new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
         new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
@@ -178,11 +178,6 @@ public class MyPayService extends Service implements SerialPortCallback {
         if (writeThread == null) {
             writeThread = new WriteThread();
             writeThread.start();
-        }
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
 
     }
