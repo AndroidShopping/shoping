@@ -50,11 +50,9 @@ import butterknife.BindView;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 
-public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInterface {
+public class MainActivity extends BaseAcivity<PShopPresenter> {
     int PERMISSION_REQUEST_COARSE_LOCATION = 2;
 
-    public BluetoothAdapter mAdapter;
-    public boolean mBtEnable;
     @BindView(R.id.main_picture_view)
     ImageView mainPictureView;
     @BindView(R.id.refresh_view)
@@ -93,55 +91,15 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     private boolean move;
     private LinearLayoutManager linearLayoutManager;
 
-    /**
-     * blue tooth broadcast receiver
-     */
-    protected BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (null == intent) {
-                return;
-            }
-            String action = intent.getAction();
-            if (android.text.TextUtils.isEmpty(action)) {
-                return;
-            }
-            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                btStartDiscovery(intent);
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                btFinishDiscovery(intent);
-            } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                btStatusChanged(intent);
-            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                btFoundDevice(intent);
-            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-                btBondStatusChange(intent);
-            } else if ("android.bluetooth.device.action.PAIRING_REQUEST".equals(action)) {
-                btPairingRequest(intent);
-            }
-        }
-    };
 
     @Override
     protected void onStart() {
         super.onStart();
-        startService(new Intent(this, MyPayService.class));
-        BtUtil.registerBluetoothReceiver(mBtReceiver, this);
-        BluetoothController.init(this);
-        if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
-            mAdapter.enable();
-            ToastUtil.showToast(MainActivity.this, R.string.ble_state_cloes);
-            return;
-        }
-        if (android.text.TextUtils.isEmpty(AppInfo.btAddress)) {
-            startActivity(new Intent(MainActivity.this, SearchBluetoothActivity.class));
-        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        BtUtil.unregisterBluetoothReceiver(mBtReceiver, this);
     }
 
     @Override
@@ -160,10 +118,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         goCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
-                    mAdapter.enable();
-                    ToastUtil.showToast(MainActivity.this, R.string.ble_state_cloes);
-                }
                 if (android.text.TextUtils.isEmpty(AppInfo.btAddress)) {
                     startActivity(new Intent(MainActivity.this, SearchBluetoothActivity.class));
                     return;
@@ -368,36 +322,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
-
-    }
-
-    @Override
-    public void btStartDiscovery(Intent intent) {
-
-    }
-
-    @Override
-    public void btFinishDiscovery(Intent intent) {
-
-    }
-
-    @Override
-    public void btStatusChanged(Intent intent) {
-
-    }
-
-    @Override
-    public void btFoundDevice(Intent intent) {
-
-    }
-
-    @Override
-    public void btBondStatusChange(Intent intent) {
-
-    }
-
-    @Override
-    public void btPairingRequest(Intent intent) {
 
     }
 
