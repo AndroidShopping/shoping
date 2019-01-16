@@ -1,5 +1,7 @@
 package com.shop.shopping.utils;
 
+import android.util.Log;
+
 public class ZhiBiQiUtils {
 
     public static int convertMoneyTOCent(byte[] data) {
@@ -24,7 +26,10 @@ public class ZhiBiQiUtils {
 
     }
 
-    public static boolean  isReceiveMoney(byte[] data) {
-        return data[0] >= 40 & data[0] <= 46;
+    public static boolean isReceiveMoney(byte[] data) {
+        Log.d("ZhiBiQiUtils", "isReceiveMoney: data[0]=" + data[0]);
+        Log.d("ZhiBiQiUtils", "isReceiveMoney:0x40 = " + 0x40);
+        Log.d("ZhiBiQiUtils", "isReceiveMoney:0x46 = " + 0x46);
+        return (data[0] >= 0x40) & (data[0] <= 0x46);
     }
 }

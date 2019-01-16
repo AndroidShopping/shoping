@@ -52,4 +52,5 @@
     <string name="port_example">3445</string>
     <string name="chu_bi_shi_bai">用户投币失败</string>
     <string name="have_click">正在收款状态，请不要重复点击</string>
+    <string name="last_is_no_ok">之前投币失败，请稍后再试</string>
 </resources>

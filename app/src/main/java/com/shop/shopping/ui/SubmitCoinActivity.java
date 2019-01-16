@@ -27,6 +27,8 @@ import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 
+import static com.shop.shopping.entity.PayState.PAY_LAST_ERROR;
+
 public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     public static final String RESULT = "result";
     public static final String ORDER_ID = "orderId";
@@ -67,6 +69,9 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
                 case PayState.PAY_OK:
                     Intent intent = submitCoinActivity.getIntent();
                     submitCoinActivity.getP().confirmOrder(intent.getStringExtra(ORDER_ID));
+                 break;
+                case PAY_LAST_ERROR:
+                    ToastUtil.showToast(submitCoinActivity, R.string.chu_bi_shi_bai);
 
                 default:
                     break;

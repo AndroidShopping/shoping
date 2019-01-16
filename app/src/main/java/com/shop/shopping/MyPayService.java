@@ -18,6 +18,7 @@ import com.felhr.usbserial.SerialPortBuilder;
 import com.felhr.usbserial.SerialPortCallback;
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
+import com.felhr.utils.HexData;
 import com.shop.shopping.entity.PayState;
 import com.shop.shopping.utils.TextUtils;
 import com.shop.shopping.utils.YingBiQiUtils;
@@ -42,10 +43,11 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static int PAYOUT_SMALL_COUNT = 50;//退币器的最小币值 5欧角
     private static int PAYOUT_BIG_COUNT = 200;//退币器退币的最大币值 2欧元
 
-    private static int TUI_BI_QI_2_YUAN_PORT = 3;
-    private static int YING_BI_SHOU_BI_PORT = 2;
-    private static int ZHI_BI_QI_SHOU_BI_PORT = 0;
-    private static int TUI_BI_QI_5_MAO_PORT = 1;
+    private static int TUI_BI_QI_2_YUAN_PORT = 0;
+    private static int ZHI_BI_QI_SHOU_BI_PORT = 1;
+    private static int TUI_BI_QI_5_MAO_PORT = 2;
+
+    private static int YING_BI_SHOU_BI_PORT = 3;
 
 
     private List<UsbSerialDevice> serialPorts;
@@ -172,14 +174,20 @@ public class MyPayService extends Service implements SerialPortCallback {
                 UsbSerialInterface.STOP_BITS_1,
                 UsbSerialInterface.PARITY_EVEN,
                 UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
-        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream()).start();
-        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
-        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
-        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, YING_BI_SHOU_BI_PORT, serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, ZHI_BI_QI_SHOU_BI_PORT, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, TUI_BI_QI_5_MAO_PORT, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
+        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, TUI_BI_QI_2_YUAN_PORT, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
         if (writeThread == null) {
             writeThread = new WriteThread();
             writeThread.start();
         }
+//        try {
+//            Thread.sleep(5000);
+//            doPayFor(300);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -202,12 +210,18 @@ public class MyPayService extends Service implements SerialPortCallback {
             int count = 0;
             boolean hasPayCompelete = false;
             int currentReceiveMoney = 0;
+            private boolean isFirst = true;
 
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what) {
                     case WHAT_DO_START_PAY:
+                        if (!isFirst && !hasPayCompelete) {
+                            mHandler.obtainMessage(PayState.PAY_LAST_ERROR).sendToTarget();
+                            return;
+                        }
+                        isFirst = false;
                         hasPayCompelete = false;
                         count = (int) msg.obj;
                         currentReceiveMoney = 0;
@@ -375,10 +389,13 @@ public class MyPayService extends Service implements SerialPortCallback {
         private AtomicBoolean keep = new AtomicBoolean(true);
         private SerialInputStream inputStream;
         private int whatForReadData;
+        private int port;
 
-        public ReadThreadCOM(int whatRead, SerialInputStream serialInputStream) {
+        public ReadThreadCOM(int whatRead, int port, SerialInputStream serialInputStream) {
             this.inputStream = serialInputStream;
             whatForReadData = whatRead;
+            this.port = port;
+
         }
 
         @Override
@@ -398,6 +415,9 @@ public class MyPayService extends Service implements SerialPortCallback {
                     }
                     if (len > 0) {
                         if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "port:  = " + port);
+                            Log.d(TAG, "  whatForReadData = " + whatForReadData);
+
                             Log.d(TAG, "handleMessage:  = " +
                                     TextUtils.printHexString(rbuf));
                             Log.d(TAG, "  whatForReadData = " + whatForReadData);
@@ -456,6 +476,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                             byte[] data = (byte[]) msg.obj;
                             if (port <= serialPorts.size() - 1) {
                                 UsbSerialDevice serialDevice = serialPorts.get(port);
+                                Log.d(TAG, "WriteThread ,handleMessage: data ,port=" + HexData.hexToString(data) + port);
                                 serialDevice.getOutputStream().write(data);
                             }
                     }
