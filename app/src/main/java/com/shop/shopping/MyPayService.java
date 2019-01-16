@@ -400,7 +400,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, "handleMessage:  = " +
                                     TextUtils.printHexString(rbuf));
-                            Log.d(TAG, "no data receive:  whatForReadData = " + whatForReadData);
+                            Log.d(TAG, "  whatForReadData = " + whatForReadData);
                         }
                         innerHandler.obtainMessage(whatForReadData, rbuf).sendToTarget();
                     } else {
@@ -408,10 +408,10 @@ public class MyPayService extends Service implements SerialPortCallback {
                     }
                     try {
                         Thread.sleep(50);
-                        if (writeHandler != null) {
-
-                            writeHandler.obtainMessage(WHAT_WRITE_DATA, 0, 0, new byte[]{2}).sendToTarget();
-                        }
+//                        if (writeHandler != null) {
+//
+//                            writeHandler.obtainMessage(WHAT_WRITE_DATA, 0, 0, new byte[]{2}).sendToTarget();
+//                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
