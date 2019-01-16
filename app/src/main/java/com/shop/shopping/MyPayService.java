@@ -48,6 +48,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static int TUI_BI_QI_5_MAO_PORT = 2;
 
     private static int YING_BI_SHOU_BI_PORT = 3;
+    public static volatile boolean hasInit = false;
 
 
     private List<UsbSerialDevice> serialPorts;
@@ -107,7 +108,6 @@ public class MyPayService extends Service implements SerialPortCallback {
             write(TuibiOperation.buildRequest(TuibiOperation.COMMAND_PAY_OUT, (byte) payoutSmallCount), TUI_BI_QI_5_MAO_PORT);
         }
 
-
     }
 
     UsbSerialDevice configUsbDevice(UsbSerialDevice device, int baudRate, int dataBits,
@@ -148,9 +148,12 @@ public class MyPayService extends Service implements SerialPortCallback {
     @Override
     public void onSerialPortsDetected(List<UsbSerialDevice> serialPorts) {
         this.serialPorts = serialPorts;
-//        if (serialPorts.size() < 3) {
-//            return;
-//        }
+        if (serialPorts.size() < 3) {
+            hasInit = false;
+            return;
+        } else {
+            hasInit = true;
+        }
         configUsbDevice(serialPorts.get(YING_BI_SHOU_BI_PORT), 19200,
                 UsbSerialInterface.DATA_BITS_8,
                 UsbSerialInterface.STOP_BITS_1,
@@ -161,7 +164,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                 UsbSerialInterface.STOP_BITS_1,
                 UsbSerialInterface.PARITY_EVEN,
                 UsbSerialInterface.FLOW_CONTROL_OFF, ZHI_BI_QI_SHOU_BI_PORT);
-
+//
         configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT),
 
                 9600,
@@ -182,24 +185,9 @@ public class MyPayService extends Service implements SerialPortCallback {
             writeThread = new WriteThread();
             writeThread.start();
         }
-        try {
-            Thread.sleep(5000);
-            doPayFor(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
     }
 
-    private void resetAll() {
-        //纸币器重置
-        write(new byte[]{0x30}, ZHI_BI_QI_SHOU_BI_PORT);
-        //禁止使能纸币起
-        write(new byte[]{0x02, 0x0d, 0x0a}, YING_BI_SHOU_BI_PORT);
-        byte[] bytes = TuibiOperation.buildRequest((byte) 0x12, (byte) 0x00);
-        write(bytes, TUI_BI_QI_2_YUAN_PORT);
-        write(bytes, TUI_BI_QI_5_MAO_PORT);
-    }
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -250,14 +238,14 @@ public class MyPayService extends Service implements SerialPortCallback {
                                     currentReceiveMoney += receiveMoney;
                                     if (currentReceiveMoney >= count) {
                                         hasPayCompelete = true;
-                                        /**
-                                         * 拒收，且进入禁能状态
-                                         */
-                                        if (currentReceiveMoney != receiveMoney) {
-                                            write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
-                                        } else {
-                                            write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
-                                        }
+//                                        /**
+//                                         * 拒收，且进入禁能状态
+//                                         */
+//                                        if (currentReceiveMoney != receiveMoney) {
+//                                            write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
+//                                        } else {
+                                        write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
+//                                        }
 
                                         doResetShouBiqi();
                                         if (currentReceiveMoney > count) {
@@ -308,7 +296,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                                         /**
                                          * 拒收，且进入禁能状态
                                          */
-                                        write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
+//                                        write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
                                         write(new byte[]{'Y', 'D', 'M', 0x02, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
                                         doResetShouBiqi();
                                         if (currentReceiveMoney > count) {
@@ -485,8 +473,14 @@ public class MyPayService extends Service implements SerialPortCallback {
                             byte[] data = (byte[]) msg.obj;
                             if (port <= serialPorts.size() - 1) {
                                 UsbSerialDevice serialDevice = serialPorts.get(port);
-                                Log.d(TAG, "WriteThread ,handleMessage: data =" + HexData.hexToString(data) + ",port=" +  port);
-                                serialDevice.getOutputStream().write(data);
+                                Log.d(TAG, "WriteThread ,handleMessage: data =" + HexData.hexToString(data) + ",port=" + port);
+                                try {
+                                    serialDevice.getOutputStream().write(data);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
                             }
                     }
 
