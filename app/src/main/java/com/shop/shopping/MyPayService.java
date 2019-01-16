@@ -182,12 +182,12 @@ public class MyPayService extends Service implements SerialPortCallback {
             writeThread = new WriteThread();
             writeThread.start();
         }
-//        try {
-//            Thread.sleep(5000);
-//            doPayFor(300);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            Thread.sleep(5000);
+            doPayFor(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -253,7 +253,12 @@ public class MyPayService extends Service implements SerialPortCallback {
                                         /**
                                          * 拒收，且进入禁能状态
                                          */
-                                        write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        if (currentReceiveMoney != receiveMoney) {
+                                            write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        } else {
+                                            write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        }
+
                                         doResetShouBiqi();
                                         if (currentReceiveMoney > count) {
                                             /**
@@ -266,6 +271,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                                         }
 
                                     } else {
+
                                         write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
                                     }
                                 }
@@ -287,7 +293,10 @@ public class MyPayService extends Service implements SerialPortCallback {
                                     /**
                                      * 拒收，且进入禁能状态
                                      */
-                                    write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
+                                    if (currentReceiveMoney != receiveMoney) {
+                                        write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
+                                    }
+
                                     write(new byte[]{'Y', 'D', 'M', 0x02, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
                                 } else {
                                     /**
@@ -476,7 +485,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                             byte[] data = (byte[]) msg.obj;
                             if (port <= serialPorts.size() - 1) {
                                 UsbSerialDevice serialDevice = serialPorts.get(port);
-                                Log.d(TAG, "WriteThread ,handleMessage: data ,port=" + HexData.hexToString(data) + port);
+                                Log.d(TAG, "WriteThread ,handleMessage: data =" + HexData.hexToString(data) + ",port=" +  port);
                                 serialDevice.getOutputStream().write(data);
                             }
                     }
