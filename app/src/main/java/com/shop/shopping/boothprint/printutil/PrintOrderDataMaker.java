@@ -3,17 +3,22 @@ package com.shop.shopping.boothprint.printutil;
 import android.content.Context;
 import android.content.Intent;
 
+import com.shop.shopping.model.ShopCategory;
+import com.shop.shopping.model.ShopItem;
+import com.shop.shopping.model.ShopResult;
+import com.shop.shopping.ui.PrintOrderActivity;
+import com.shop.shopping.utils.TextUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.shop.shopping.model.ShopCategory;
-import com.shop.shopping.model.ShopItem;
-import com.shop.shopping.model.ShopResult;
-import com.shop.shopping.ui.PrintOrderActivity;
-import com.shop.shopping.utils.TextUtils;
+import cn.droidlover.xdroidmvp.shopping.R;
+
+import static com.shop.shopping.ui.PrintOrderActivity.RECEIVE;
+import static com.shop.shopping.ui.PrintOrderActivity.REPAY;
 
 
 /**
@@ -59,7 +64,7 @@ public class PrintOrderDataMaker implements PrintDataMaker {
             printer.setAlignCenter();
             printer.setEmphasizedOn();
             printer.setFontSize(1);
-            printer.print("欢迎光临***餐厅");
+            printer.print(TextUtils.getString(R.string.welcome_to_this));
             printer.printLineFeed();
             printer.setEmphasizedOff();
             printer.printLineFeed();
@@ -67,7 +72,7 @@ public class PrintOrderDataMaker implements PrintDataMaker {
             printer.printLineFeed();
             printer.setFontSize(0);
             printer.setAlignCenter();
-            printer.print("订单号：" + intent.getStringExtra(PrintOrderActivity.NUMBER_ID));
+            printer.print(TextUtils.getString(R.string.order_id_data) + intent.getStringExtra(PrintOrderActivity.NUMBER_ID));
             printer.printLineFeed();
 
             printer.setAlignCenter();
@@ -78,14 +83,15 @@ public class PrintOrderDataMaker implements PrintDataMaker {
 
             printer.printLineFeed();
             printer.setAlignLeft();
-            printer.print("订单状态: " + "已下单");
+            printer.print(TextUtils.getString(R.string.order_state));
             printer.printLineFeed();
 
             printer.setAlignCenter();
-            printer.print("购物信息");
+            printer.printLineFeed();
             printer.printLineFeed();
             printer.setAlignCenter();
-            printer.printInOneLine("产品", "数量*单价", "金额", 0);
+            printer.printInOneLine(TextUtils.getString(R.string.prodcut),
+                    TextUtils.getString(R.string.product_dan_jia), TextUtils.getString(R.string.count), 0);
             printer.printLineFeed();
             printer.printLine();
             printer.printLineFeed();
@@ -106,24 +112,26 @@ public class PrintOrderDataMaker implements PrintDataMaker {
             printer.printLine();
             printer.printLineFeed();
             printer.setAlignLeft();
-            printer.print("购买件数:" + result.getAllBuyedGoodCount());
-
-            printer.print("应付金额:" + TextUtils.getPriceText(result.getAllSelectPrice()));
-            printer.printLine();
+            printer.print(TextUtils.getString(R.string.jian_shu) + result.getAllBuyedGoodCount());
+            printer.printLineFeed();
             printer.setAlignLeft();
-            printer.print("实收金额:" + 100);
+            printer.print(TextUtils.getString(R.string.ying_fu) + TextUtils.getPriceText(result.getAllSelectPrice()));
+            printer.printLineFeed();
+            printer.setAlignLeft();
+            printer.print(TextUtils.getString(R.string.shi_shou_jin_e) +
+                    TextUtils.getPriceText(intent.getIntExtra(RECEIVE, 0)).replace(TextUtils.getString(R.string.mark), ""));
+            printer.printLineFeed();
+            printer.setAlignLeft();
+            printer.print(TextUtils.getString(R.string.zhao_ling) + TextUtils.getPriceText(intent.getIntExtra(REPAY, 0)).replace(TextUtils.getString(R.string.mark), ""));
 
-            printer.print("找零:" + 100);
-            printer.printLine();
+            printer.printLineFeed();
             printer.printLineFeed();
             printer.printLine();
             printer.setAlignCenter();
-            printer.print("谢谢惠顾，欢迎再次光临！");
-            printer.printLineFeed();
+            printer.print(TextUtils.getString(R.string.xie_xie_again));
             printer.printLineFeed();
             printer.printLineFeed();
             printer.feedPaperCut();
-
             data.add(printer.getDataAndClose());
             return data;
         } catch (Exception e) {

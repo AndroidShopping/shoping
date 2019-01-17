@@ -19,6 +19,7 @@
     <string name="print_order">订单打印</string>
     <string name="printting">机器正在打印订单，请勿离开</string>
     <string name="welcome">欢迎光临百叶村</string>
+    <string name="welcome_to_this">欢迎光临</string>
     <string name="please_take_repay">请取回机器找零</string>
     <string name="on_return_main">正在返回主页</string>
     <string name="empty_view_hint">暂无数据</string>
@@ -53,4 +54,14 @@
     <string name="chu_bi_shi_bai">用户投币失败</string>
     <string name="have_click">正在收款状态，请不要重复点击</string>
     <string name="last_is_no_ok">之前投币失败，请稍后再试</string>
+    <string name="order_id_data">订单号：</string>
+    <string name="order_state">订单状态: 已下单</string>
+    <string name="prodcut">产品</string>
+    <string name="product_dan_jia">数量*单价</string>
+    <string name="count">金额</string>
+    <string name="jian_shu">购买件数：</string>
+    <string name="ying_fu">应付金额：</string>
+    <string name="shi_shou_jin_e">实收金额：</string>
+    <string name="zhao_ling">找零：</string>
+    <string name="xie_xie_again">谢谢惠顾，欢迎再次光临！</string>
 </resources>

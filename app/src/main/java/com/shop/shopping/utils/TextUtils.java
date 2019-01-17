@@ -54,6 +54,7 @@ public final class TextUtils {
         return getString(R.string.mark) + moneyFen2Yuan("" + price).toString();
     }
 
+
     public static String printHexString(byte[] b) {
         String a = "";
         for (int i = 0; i < b.length; i++) {
