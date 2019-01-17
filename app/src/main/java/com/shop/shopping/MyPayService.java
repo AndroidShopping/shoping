@@ -215,6 +215,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                         hasPayCompelete = false;
                         count = (int) msg.obj;
                         currentReceiveMoney = 0;
+                        write(new byte[]{0x3e}, ZHI_BI_QI_SHOU_BI_PORT);
                         write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
                         write(new byte[]{'Y', 'D', 'M', 0x01, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
                         break;
