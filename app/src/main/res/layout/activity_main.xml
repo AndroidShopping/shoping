@@ -21,18 +21,22 @@
         android:layout_height="wrap_content"
         android:background="@mipmap/background" />
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="42dp"
-        android:background="#fff">
+        android:background="#fff"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/refresh_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="17dp"
+            android:layout_marginRight="20dp"
             android:background="@drawable/refresh"
             android:drawableLeft="@drawable/refresh_icon"
             android:drawablePadding="10dp"
@@ -43,7 +47,15 @@
             android:text="@string/refresh"
             android:textColor="#fff" />
 
-    </RelativeLayout>
+        <Button
+            android:id="@+id/setting"
+            android:background="#fff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/setting" />
+
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/container"
@@ -102,9 +114,9 @@
 
             <ImageView
                 android:id="@+id/image"
-                android:layout_marginRight="12dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="12dp"
                 android:background="@drawable/shop_cart_select"
                 android:clickable="false"
 

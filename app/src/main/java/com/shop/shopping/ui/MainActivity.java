@@ -71,6 +71,8 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     TextView noShop;
     @BindView(R.id.go_cal)
     View goCal;
+    @BindView(R.id.setting)
+    View settingView;
     private ViewGroup anim_mask_layout;
     ShopPopupFragment myFragment;
 
@@ -476,6 +478,12 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
             @Override
             public void onClick(View v) {
                 refresh();
+            }
+        });
+        findViewById(R.id.setting).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SettingActivity.start(v.getContext());
             }
         });
     }
