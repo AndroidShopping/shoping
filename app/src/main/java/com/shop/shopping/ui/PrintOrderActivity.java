@@ -12,11 +12,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import cn.droidlover.xdroidmvp.shopping.R;
 import com.shop.shopping.boothprint.BtService;
 import com.shop.shopping.boothprint.base.AppInfo;
 import com.shop.shopping.boothprint.bt.BtInterface;
@@ -25,11 +20,17 @@ import com.shop.shopping.boothprint.print.PrintUtil;
 import com.shop.shopping.boothprint.util.ToastUtil;
 import com.shop.shopping.model.ShopResult;
 import com.shop.shopping.utils.TextUtils;
+import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import cn.droidlover.xdroidmvp.shopping.R;
 
 public class PrintOrderActivity extends BaseAcivity implements BtInterface {
     public static final String RESULT = "result";
-    public static final String ORDER_ID = "orderId";
+    public static final String NUMBER_ID = "number_id";
     public static final String REPAY = "repay";
+    public static final String RECEIVE = "receive";
     public static final int TOTAL_SECOND = 30 * 1000;
     public static final int INTERVAL_SECON = 1 * 1000;
     private BluetoothAdapter bluetoothAdapter;
@@ -45,10 +46,11 @@ public class PrintOrderActivity extends BaseAcivity implements BtInterface {
     TextView backReturnView;
     private CountDownTimer mTimer;
 
-    public static void start(Context context, ShopResult result, String orderId, int repay) {
+    public static void start(Context context, ShopResult result, String numbereId, int haveReceive, int repay) {
         Intent intent = new Intent(context, PrintOrderActivity.class);
         intent.putExtra(RESULT, result);
-        intent.putExtra(ORDER_ID, orderId);
+        intent.putExtra(NUMBER_ID, numbereId);
+        intent.putExtra(RECEIVE, haveReceive);
         intent.putExtra(REPAY, repay);
         context.startActivity(intent);
 

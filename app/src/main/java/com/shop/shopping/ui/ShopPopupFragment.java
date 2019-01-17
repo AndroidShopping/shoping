@@ -18,12 +18,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import cn.droidlover.xdroidmvp.shopping.R;
 import com.shop.shopping.model.ShopItem;
 import com.shop.shopping.model.ShopResult;
 import com.shop.shopping.utils.TextUtils;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import cn.droidlover.xdroidmvp.shopping.R;
 
 @SuppressLint("ValidFragment")
 public class ShopPopupFragment extends DialogFragment {
@@ -125,6 +126,9 @@ public class ShopPopupFragment extends DialogFragment {
 
         @Override
         public int getItemCount() {
+            if (shopResult == null) {
+                return 0;
+            }
             return shopResult.getBuyedKindOfGoodCount();
         }
     }

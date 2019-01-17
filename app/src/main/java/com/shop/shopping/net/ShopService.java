@@ -5,10 +5,9 @@ import com.shop.shopping.model.OrderResult;
 import com.shop.shopping.model.ShopResult;
 
 import io.reactivex.Flowable;
-import retrofit2.http.Field;
-import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 /**
  * Created by wanglei on 2016/12/31.
@@ -20,12 +19,10 @@ public interface ShopService {
     Flowable<ShopResult> getShopItemList();
 
 
-    @FormUrlEncoded
     @POST("/shop/addShopOrder")
-    Flowable<OrderResult> createPreviewOrder(@Field(value = "total") int total,
-                                             @Field(value = "order") String items);
+    Flowable<OrderResult> createPreviewOrder(@Query(value = "total") int total,
+                                             @Query(value = "order") String items);
 
-    @FormUrlEncoded
     @POST("/shop/updateShopOrder")
-    Flowable<ConfirmOrderResult> confirmOrder(@Field(value = "id") String id, @Field(value = "orderStatus") int state);
+    Flowable<ConfirmOrderResult> confirmOrder(@Query(value = "id") String id, @Query(value = "orderStatus") int state);
 }

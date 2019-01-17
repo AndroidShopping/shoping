@@ -78,6 +78,7 @@ public class MyPayService extends Service implements SerialPortCallback {
      * @param moneyCount 需要退款的额度，单位是欧分
      */
     public void doPayOut(int moneyCount) {
+        Log.d(TAG, "doPayOut: moneyCount =" + moneyCount);
         int payoutSmallCount = 0;
         int payoutBigCount = 0;
         boolean hasFount = false;
@@ -134,6 +135,7 @@ public class MyPayService extends Service implements SerialPortCallback {
      * @param moneyCount 用户需要支付的金额，单位为分
      */
     public void doPayFor(int moneyCount) {
+        Log.d(TAG, "doPayFor: moneyCount =" + moneyCount);
         if (mHandler != null) {
             Message message = mHandler.obtainMessage();
             message.what = PayState.START_PAY;
@@ -255,7 +257,8 @@ public class MyPayService extends Service implements SerialPortCallback {
                                             doPayOut(currentReceiveMoney - count);
                                         }
                                         if (mHandler != null) {
-                                            mHandler.obtainMessage(PayState.PAY_OK).sendToTarget();
+                                            mHandler.obtainMessage(PayState.PAY_OK, currentReceiveMoney,
+                                                    currentReceiveMoney - count).sendToTarget();
                                         }
 
                                     } else {
@@ -306,7 +309,8 @@ public class MyPayService extends Service implements SerialPortCallback {
                                             doPayOut(currentReceiveMoney - count);
                                         }
                                         if (mHandler != null) {
-                                            mHandler.obtainMessage(PayState.PAY_OK).sendToTarget();
+                                            mHandler.obtainMessage(PayState.PAY_OK, currentReceiveMoney,
+                                                    currentReceiveMoney - count).sendToTarget();
                                         }
 
                                     } else {
@@ -354,6 +358,13 @@ public class MyPayService extends Service implements SerialPortCallback {
         }
         if (writeHandler != null) {
             writeHandler.obtainMessage(WHAT_CLOSE_IO).sendToTarget();
+        }
+        if (serialPorts != null) {
+            for (UsbSerialDevice serialPort : serialPorts) {
+                if (serialPort != null && serialPort.isOpen) {
+                    serialPort.close();
+                }
+            }
         }
         MyPayService.SERVICE_CONNECTED = false;
     }

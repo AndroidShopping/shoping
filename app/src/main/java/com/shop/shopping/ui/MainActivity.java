@@ -25,7 +25,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.classic.common.MultipleStatusView;
-import com.shop.shopping.MyPayService;
 import com.shop.shopping.adapter.adapter.GoodAdapter;
 import com.shop.shopping.adapter.adapter.RecycleGoodsCategoryListAdapter;
 import com.shop.shopping.boothprint.BluetoothController;
@@ -45,6 +44,7 @@ import com.shop.shopping.widget.MyDividerItemDecoration;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import cn.droidlover.xdroidmvp.net.NetError;
@@ -125,7 +125,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     @Override
     protected void onStart() {
         super.onStart();
-        startService(new Intent(this, MyPayService.class));
         BtUtil.registerBluetoothReceiver(mBtReceiver, this);
         BluetoothController.init(this);
         if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
@@ -580,7 +579,8 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
      *
      * @param event print msg event
      */
-    @Subscribe
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(PrintMsgEvent event) {
         if (event.type == PrinterMsgType.MESSAGE_TOAST) {
             ToastUtil.showToast(MainActivity.this, event.msg);

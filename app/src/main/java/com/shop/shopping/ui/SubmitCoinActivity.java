@@ -32,6 +32,7 @@ import static com.shop.shopping.entity.PayState.PAY_LAST_ERROR;
 public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     public static final String RESULT = "result";
     public static final String ORDER_ID = "orderId";
+    public static final String PRINT_NUMBER = "print_number";
     @BindView(R.id.titlebar)
     CommonTitleBar titlebar;
     @BindView(R.id.submit_view)
@@ -40,6 +41,8 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     private MyPayService myPayService;
     private boolean hasClick = false;
     private int payMoneyCount;
+    private int haveReceive = 0;
+    private int haveTuiBi = 0;
     /**
      * 是否因为网络原因或者服务器错误而退币
      */
@@ -67,9 +70,11 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
                     ToastUtil.showToast(submitCoinActivity, R.string.chu_bi_shi_bai);
                     break;
                 case PayState.PAY_OK:
+                    submitCoinActivity.haveReceive = msg.arg1;
+                    submitCoinActivity.haveTuiBi = msg.arg2;
                     Intent intent = submitCoinActivity.getIntent();
                     submitCoinActivity.getP().confirmOrder(intent.getStringExtra(ORDER_ID));
-                 break;
+                    break;
                 case PAY_LAST_ERROR:
                     ToastUtil.showToast(submitCoinActivity, R.string.chu_bi_shi_bai);
 
@@ -80,10 +85,11 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
         }
     }
 
-    public static void start(Context context, ShopResult result, String orderId) {
+    public static void start(Context context, ShopResult result, String id, String printNumber) {
         Intent intent = new Intent(context, SubmitCoinActivity.class);
         intent.putExtra(RESULT, result);
-        intent.putExtra(ORDER_ID, orderId);
+        intent.putExtra(ORDER_ID, id);
+        intent.putExtra(PRINT_NUMBER, printNumber);
         context.startActivity(intent);
 
     }
@@ -171,14 +177,14 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
             ToastUtils.show(confirmOrderResult.message);
             if (!havePayOutBeacuseServerError) {
                 havePayOutBeacuseServerError = true;
-                myPayService.doPayOut(payMoneyCount);
+                myPayService.doPayOut(haveReceive);
             }
             return;
         }
         Intent intent = getIntent();
         ShopResult result = intent.getParcelableExtra(RESULT);
         PrintOrderActivity.start(SubmitCoinActivity.this,
-                result, intent.getStringExtra(ORDER_ID), 123);
+                result, intent.getStringExtra(PRINT_NUMBER), haveReceive, haveTuiBi);
     }
 
 

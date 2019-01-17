@@ -67,7 +67,7 @@ public class PrintOrderDataMaker implements PrintDataMaker {
             printer.printLineFeed();
             printer.setFontSize(0);
             printer.setAlignCenter();
-            printer.print("订单号：" + intent.getStringExtra(PrintOrderActivity.ORDER_ID));
+            printer.print("订单号：" + intent.getStringExtra(PrintOrderActivity.NUMBER_ID));
             printer.printLineFeed();
 
             printer.setAlignCenter();

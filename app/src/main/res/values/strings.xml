@@ -4,7 +4,7 @@
     <string name="usb_dis">USB设备断开连接</string>
     <string name="dont_usb">USB没有连接串口设备</string>
     <string name="no_usb_avalible">没有USB串口可用</string>
-    <string name="mark">¥</string>
+    <string name="mark">€</string>
     <string name="go_caclu">去结算</string>
     <string name="cart_empty">购物车为空</string>
     <string name="clear_shop_cart">清空购物车</string>

@@ -16,6 +16,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.shop.shopping.model.OrderResult;
+import com.shop.shopping.model.ShopItem;
+import com.shop.shopping.model.ShopResult;
+import com.shop.shopping.present.SubmitPresenter;
+import com.shop.shopping.utils.TextUtils;
+import com.shop.shopping.utils.ToastUtils;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 
 import butterknife.BindView;
@@ -24,12 +30,6 @@ import cn.droidlover.xdroidmvp.imageloader.ILFactory;
 import cn.droidlover.xdroidmvp.imageloader.ILoader;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
-import com.shop.shopping.model.OrderResult;
-import com.shop.shopping.model.ShopItem;
-import com.shop.shopping.model.ShopResult;
-import com.shop.shopping.present.SubmitPresenter;
-import com.shop.shopping.utils.TextUtils;
-import com.shop.shopping.utils.ToastUtils;
 
 public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
     public static final String RESULT = "result";
@@ -55,7 +55,8 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         if (shopResult.isBizError()) {
             ToastUtils.show(shopResult.getErrorMsg());
         } else {
-            SubmitCoinActivity.start(SubmitActivity.this, shopResult, orderResult.getData().getOrderId());
+            SubmitCoinActivity.start(SubmitActivity.this, shopResult, orderResult.getData().getOrderId(),
+                    orderResult.getData().getNumber());
 
 
         }
@@ -76,6 +77,7 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         submitView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                SubmitCoinActivity.start(SubmitActivity.this, shopResult, "33");
                 ((SubmitPresenter) getP()).createPrevieOrder(shopResult.getAllSelectPrice(), shopResult.getSelectedItem());
             }
         });

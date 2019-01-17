@@ -2,13 +2,15 @@ package com.shop.shopping;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+
+import com.shop.shopping.boothprint.base.AppInfo;
+
 import cn.droidlover.xdroidmvp.net.LogInterceptor;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.net.NetProvider;
 import cn.droidlover.xdroidmvp.net.RequestHandler;
 import cn.droidlover.xdroidmvp.net.XApi;
-import com.shop.shopping.boothprint.base.AppInfo;
-
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -25,13 +27,14 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        startService(new Intent(getApplicationContext(), MyPayService.class));
         AppInfo.init(getApplicationContext());
         context = this;
         XApi.registerProvider(new NetProvider() {
             @Override
             public Interceptor[] configInterceptors() {
                 Interceptor[] interceptors = new Interceptor[1];
-                interceptors[0]= new LogInterceptor();
+                interceptors[0] = new LogInterceptor();
                 return interceptors;
             }
 
@@ -84,8 +87,6 @@ public class App extends Application {
 
     @Override
     public void onTerminate() {
-        //程序终止关闭串口
-//        ICT104.closeSerialPort();
         super.onTerminate();
     }
 
