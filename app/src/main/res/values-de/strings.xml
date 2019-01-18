@@ -6,6 +6,7 @@
     <string name="no_usb_avalible">Kein serieller USB-Anschluss verfügbar</string>
     <string name="mark">€</string>
     <string name="go_caclu">Zur Siedlung gehen</string>
+    <string name="welcome_to_this">Willkommen in der</string>
     <string name="cart_empty">Einkaufswagen ist leer</string>
     <string name="clear_shop_cart">Leerer Einkaufswagen</string>
     <string name="title_check">Bitte überprüfen Sie Ihre Bestellung</string>
@@ -64,4 +65,5 @@
     <string name="zhao_ling">Wechselgeld:</string>
     <string name="xie_xie_again">Vielen dank, dass sie wieder da sind.</string>
     <string name="setting">die</string>
+    <string name="refresh">Refresh</string>
 </resources>
