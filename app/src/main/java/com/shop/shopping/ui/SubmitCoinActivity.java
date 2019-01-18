@@ -2,12 +2,15 @@ package com.shop.shopping.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -94,6 +97,35 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
 
     }
 
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            showDialog();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    private void showDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.tip).setMessage(R.string.quit).setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (havePayOutBeacuseServerError) {
+                    return;
+                }
+                havePayOutBeacuseServerError = true;
+                myPayService.doCancel();
+                finish();
+
+            }
+        }).setNegativeButton(R.string.no, null);
+        builder.show();
+    }
+
     @Override
     public void initData(Bundle savedInstanceState) {
         titlebar.setListener(new CommonTitleBar.OnTitleBarListener() {
@@ -101,10 +133,12 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
             public void onClicked(View v, int action, String extra) {
                 if (action == CommonTitleBar.ACTION_LEFT_BUTTON
                         || action == CommonTitleBar.ACTION_LEFT_TEXT) {
-                    onBackPressed();
+                    showDialog();
                 }
             }
         });
+
+
         submitView.setOnClickListener(new View.OnClickListener() {
 
 

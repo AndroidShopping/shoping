@@ -31,10 +31,12 @@ public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
     private static final int WHAT_DO_START_PAY = 2;
+
     private static final int WHAT_ON_ZHI_BI_QI_READ_DATA = 3;
     private static final int WHAT_ON_YING_BI_QI_READ_DATA = 4;
     private static final int WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA = 5;
     private static final int WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA = 6;
+    public static final int WHAT_DO_CANCEL = 7;
     String TAG = "MyPayService";
     private static final int BAUD_RATE = 9600; // BaudRate. Change this value if you need
     public static boolean SERVICE_CONNECTED = false;
@@ -147,6 +149,21 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     }
 
+    /**
+     * 取消收款
+     */
+    public void doCancel() {
+        Log.d(TAG, "doCancel: ");
+        if (mHandler != null) {
+            Message message = mHandler.obtainMessage();
+            message.what = PayState.START_PAY;
+            message.sendToTarget();
+        }
+        if (innerHandler != null) {
+            innerHandler.obtainMessage(WHAT_DO_CANCEL).sendToTarget();
+        }
+    }
+
     @Override
     public void onSerialPortsDetected(List<UsbSerialDevice> serialPorts) {
         this.serialPorts = serialPorts;
@@ -219,6 +236,11 @@ public class MyPayService extends Service implements SerialPortCallback {
                         write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
                         write(new byte[]{'Y', 'D', 'M', 0x01, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
                         break;
+                    case WHAT_DO_CANCEL:
+                        hasPayCompelete = true;
+                        doResetShouBiqi();
+                        doPayOut(currentReceiveMoney);
+                        break;
                     case WHAT_ON_ZHI_BI_QI_READ_DATA:
                         byte[] data = (byte[]) msg.obj;
                         if (data != null) {
@@ -241,15 +263,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                                     currentReceiveMoney += receiveMoney;
                                     if (currentReceiveMoney >= count) {
                                         hasPayCompelete = true;
-//                                        /**
-//                                         * 拒收，且进入禁能状态
-//                                         */
-//                                        if (currentReceiveMoney != receiveMoney) {
-//                                            write(new byte[]{0x0f}, ZHI_BI_QI_SHOU_BI_PORT);
-//                                        } else {
                                         write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
-//                                        }
-
                                         doResetShouBiqi();
                                         if (currentReceiveMoney > count) {
                                             /**

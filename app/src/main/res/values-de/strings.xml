@@ -66,4 +66,9 @@
     <string name="xie_xie_again">Vielen dank, dass sie wieder da sind.</string>
     <string name="setting">die</string>
     <string name="refresh">Refresh</string>
+
+    <string name="tip">tipp</string>
+    <string name="quit">Sind sie sicher, dass wir diese bestellung abbrechen müssen?</string>
+    <string name="yes">sicher</string>
+    <string name="no">absagen</string>
 </resources>
