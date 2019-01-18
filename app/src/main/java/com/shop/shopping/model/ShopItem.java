@@ -17,7 +17,7 @@ public class ShopItem implements Parcelable {
     String standData;
 
     public String getStandData() {
-        return "全脂，标准";
+        return " ";
     }
 
     public void setStandData(String standData) {

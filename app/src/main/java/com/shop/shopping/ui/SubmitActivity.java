@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
@@ -67,6 +68,7 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         ButterKnife.bind(this);
         goodsRecycleView.setLayoutManager(new LinearLayoutManager(this));
         goodsRecycleView.setAdapter(new MyAdapter());
+        goodsRecycleView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
         shopResult = getIntent().getParcelableExtra(RESULT);
         String string = TextUtils.getString(R.string.go_pay);
         SpannableStringBuilder builder = new SpannableStringBuilder(string + " ");
@@ -109,8 +111,6 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         ImageView goodPicView;
         @BindView(R.id.category_view)
         TextView categoryView;
-        @BindView(R.id.biao_zhun_view)
-        TextView biaoZhunView;
         @BindView(R.id.count_view)
         TextView countView;
         @BindView(R.id.all_price_view)
@@ -142,7 +142,6 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
             holder.countView.setText("X" + item.getBuyCount());
             String categoryName = shopResult.findCategoryName(item);
             holder.categoryView.setText(item.getName() + "-" + categoryName);
-            holder.biaoZhunView.setText(item.getStandData());
         }
 
         @Override
