@@ -25,12 +25,14 @@ import com.shop.shopping.utils.YingBiQiUtils;
 import com.shop.shopping.utils.ZhiBiQiUtils;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
     private static final int WHAT_DO_START_PAY = 2;
+    private static CountDownLatch countDownLatch = new CountDownLatch(1);
 
     private static final int WHAT_ON_ZHI_BI_QI_READ_DATA = 3;
     private static final int WHAT_ON_YING_BI_QI_READ_DATA = 4;
@@ -204,6 +206,12 @@ public class MyPayService extends Service implements SerialPortCallback {
             writeThread = new WriteThread();
             writeThread.start();
         }
+        try {
+            countDownLatch.await();
+            doResetShouBiqi();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -315,7 +323,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                                          * 拒收，且进入禁能状态
                                          */
 //                                        write(new byte[]{'Y', 'D', 'M', 0x31, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
-                                        write(new byte[]{'Y', 'D', 'M', 0x02, 0xd, 0xa}, ZHI_BI_QI_SHOU_BI_PORT);
+                                        write(new byte[]{'Y', 'D', 'M', 0x02, 0xd, 0xa}, YING_BI_SHOU_BI_PORT);
                                         doResetShouBiqi();
                                         if (currentReceiveMoney > count) {
                                             /**
@@ -350,7 +358,7 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     private void doResetShouBiqi() {
         write(new byte[]{0x5e}, ZHI_BI_QI_SHOU_BI_PORT);
-        write(new byte[]{'Y', 'D', 'M', 0x02, 0x0d, 0x0a}, TUI_BI_QI_5_MAO_PORT);
+        write(new byte[]{'Y', 'D', 'M', 0x02, 0x0d, 0x0a}, YING_BI_SHOU_BI_PORT);
     }
 
 
@@ -512,6 +520,7 @@ public class MyPayService extends Service implements SerialPortCallback {
 
                 }
             };
+            countDownLatch.countDown();
             Looper.loop();
         }
     }
