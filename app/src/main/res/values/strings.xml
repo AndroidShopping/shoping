@@ -72,4 +72,5 @@
     <string name="no">取消</string>
     <string name="pay_count_number_view">需要支付金额：</string>
     <string name="ying_shou_view">已支付金额：</string>
+    <string name="gou_wu_che_is_empty">当前购物车为空，不能去结算</string>
 </resources>

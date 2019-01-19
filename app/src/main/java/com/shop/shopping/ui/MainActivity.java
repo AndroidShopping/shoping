@@ -164,6 +164,10 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         goCal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (result == null || result.getAllSelectCount() == 0) {
+                    ToastUtil.showToast(MainActivity.this, R.string.gou_wu_che_is_empty);
+                    return;
+                }
                 if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
                     mAdapter.enable();
                     ToastUtil.showToast(MainActivity.this, R.string.ble_state_cloes);
@@ -172,6 +176,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
                     startActivity(new Intent(MainActivity.this, SearchBluetoothActivity.class));
                     return;
                 }
+
 
                 SubmitActivity.start(MainActivity.this, result);
             }
@@ -210,13 +215,11 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
                 shopCartNum.setVisibility(View.VISIBLE);
                 totalPrice.setVisibility(View.VISIBLE);
                 noShop.setVisibility(View.GONE);
-                goCal.setEnabled(true);
                 image.setClickable(true);
             } else {
                 shopCartNum.setVisibility(View.GONE);
                 totalPrice.setVisibility(View.GONE);
                 noShop.setVisibility(View.VISIBLE);
-                goCal.setEnabled(false);
                 image.setClickable(false);
             }
             totalPrice.setText(TextUtils.getPriceText(event.getAllSelectPrice()));
@@ -378,7 +381,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         shopCartNum.setVisibility(View.GONE);
         totalPrice.setVisibility(View.GONE);
         noShop.setVisibility(View.VISIBLE);
-        goCal.setEnabled(false);
         image.setClickable(false);
         mGoodsCategoryListAdapter.updateShopResult(shopResult);
         goodAdapter.updateShopResult(shopResult);
