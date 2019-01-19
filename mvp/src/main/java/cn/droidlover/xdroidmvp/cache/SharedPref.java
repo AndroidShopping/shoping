@@ -83,7 +83,7 @@ public class SharedPref implements ICache {
 
     public void putString(String key, String value) {
         editor.putString(key, value);
-        editor.apply();
+        editor.commit();
     }
 
     public String getString(String key, String defValue) {

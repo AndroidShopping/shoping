@@ -239,6 +239,7 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
         ShopResult result = intent.getParcelableExtra(RESULT);
         PrintOrderActivity.start(SubmitCoinActivity.this,
                 result, intent.getStringExtra(PRINT_NUMBER), haveReceive, haveTuiBi);
+        finish();
     }
 
 

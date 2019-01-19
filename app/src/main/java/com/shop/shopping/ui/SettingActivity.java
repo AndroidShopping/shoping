@@ -8,16 +8,17 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.shop.shopping.App;
+import com.shop.shopping.Killservice;
+import com.shop.shopping.boothprint.util.ToastUtil;
+import com.shop.shopping.model.Keys;
+import com.shop.shopping.utils.PatternUtils;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.cache.SharedPref;
 import cn.droidlover.xdroidmvp.shopping.R;
-import com.shop.shopping.App;
-import com.shop.shopping.boothprint.util.ToastUtil;
-import com.shop.shopping.model.Keys;
-import com.shop.shopping.utils.PatternUtils;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -51,6 +52,16 @@ public class SettingActivity extends AppCompatActivity {
         tvIp.setSelection(ip.length());
         etPort.setText(port);
         etPort.setSelection(port.length());
+        final CommonTitleBar titleBar = (CommonTitleBar) findViewById(R.id.titlebar);
+        titleBar.setListener(new CommonTitleBar.OnTitleBarListener() {
+            @Override
+            public void onClicked(View v, int action, String extra) {
+                if (action == CommonTitleBar.ACTION_LEFT_BUTTON
+                        || action == CommonTitleBar.ACTION_LEFT_TEXT) {
+                    onBackPressed();
+                }
+            }
+        });
         okView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,7 +78,8 @@ public class SettingActivity extends AppCompatActivity {
                 }
                 SharedPref.getInstance(App.getContext()).putString(Keys.IP, ip);
                 SharedPref.getInstance(App.getContext()).putString(Keys.PORT, port);
-                finish();
+                startService(new Intent(SettingActivity.this, Killservice.class));
+                Runtime.getRuntime().exit(0);
 
             }
         });

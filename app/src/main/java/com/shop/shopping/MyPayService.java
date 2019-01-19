@@ -390,13 +390,24 @@ public class MyPayService extends Service implements SerialPortCallback {
         if (writeHandler != null) {
             writeHandler.obtainMessage(WHAT_CLOSE_IO).sendToTarget();
         }
-        if (serialPorts != null) {
-            for (UsbSerialDevice serialPort : serialPorts) {
-                if (serialPort != null && serialPort.isOpen) {
-                    serialPort.close();
+        try {
+            if (serialPorts != null) {
+                for (UsbSerialDevice serialPort : serialPorts) {
+                    if (serialPort != null && serialPort.isOpen) {
+                        serialPort.close();
+                        SerialInputStream inputStream = serialPort.getInputStream();
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
+                    }
+
+
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         MyPayService.SERVICE_CONNECTED = false;
     }
 

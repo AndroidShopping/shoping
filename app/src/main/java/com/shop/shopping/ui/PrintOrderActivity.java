@@ -97,6 +97,12 @@ public class PrintOrderActivity extends BaseAcivity implements BtInterface {
                 }
             }
         });
+        submitView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.start(PrintOrderActivity.this);
+            }
+        });
         Intent intent = getIntent();
         int repay = intent.getIntExtra(REPAY, 0);
         if (repay == 0) {

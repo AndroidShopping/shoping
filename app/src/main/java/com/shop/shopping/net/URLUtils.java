@@ -13,7 +13,6 @@ public class URLUtils {
         String port = instance.getString(Keys.PORT, "9999");
         boolean ip1 = PatternUtils.isIP(ip);
         boolean port1 = PatternUtils.isPort(port);
-//        http://rap2api.taobao.org/
         if (ip1 && port1) {
             return "http://" + ip + ":" + port + "/";
         }

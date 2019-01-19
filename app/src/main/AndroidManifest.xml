@@ -22,8 +22,10 @@
     <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- 地理位置 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <uses-feature android:name="android.hardware.usb.host" />
-    <uses-permission android:name="android.permission.MANAGE_USB"/>
+
+    <uses-permission android:name="android.permission.MANAGE_USB" />
 
     <application
         android:name="com.shop.shopping.App"
@@ -32,10 +34,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity
-            android:name="com.shop.shopping.ui.MainActivity"
-            android:launchMode="singleTask">
+        <activity android:name="com.shop.shopping.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -61,9 +60,12 @@
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
-
-
         </service>
+        <service
+            android:name="com.shop.shopping.Killservice"
+            android:enabled="true"
+            android:process=":remote"
+            android:exported="true"></service>
     </application>
 
 </manifest>
