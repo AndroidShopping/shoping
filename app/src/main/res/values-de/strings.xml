@@ -71,4 +71,7 @@
     <string name="quit">Sind sie sicher, dass wir diese bestellung abbrechen müssen?</string>
     <string name="yes">sicher</string>
     <string name="no">absagen</string>
+
+    <string name="pay_count_number_view">Zu zahlender Betrag:</string>
+    <string name="ying_shou_view">Bezahlter Betrag:</string>
 </resources>
