@@ -74,8 +74,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     TextView noShop;
     @BindView(R.id.go_cal)
     View goCal;
-    @BindView(R.id.setting)
-    View settingView;
     @BindView(R.id.titlebar)
     CommonTitleBar titlebar;
     private ViewGroup anim_mask_layout;
