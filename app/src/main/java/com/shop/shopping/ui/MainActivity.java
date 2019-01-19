@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,12 +42,14 @@ import com.shop.shopping.utils.DensityUtil;
 import com.shop.shopping.utils.TextUtils;
 import com.shop.shopping.utils.ToastUtils;
 import com.shop.shopping.widget.MyDividerItemDecoration;
+import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 
@@ -73,6 +76,8 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     View goCal;
     @BindView(R.id.setting)
     View settingView;
+    @BindView(R.id.titlebar)
+    CommonTitleBar titlebar;
     private ViewGroup anim_mask_layout;
     ShopPopupFragment myFragment;
 
@@ -178,6 +183,21 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
         }
+        titlebar.setOnClickListener(new View.OnClickListener() {
+            final int COUNTS = 5;//点击次数
+            final long DURATION = 3 * 1000;//规定有效时间
+            long[] mHits = new long[COUNTS];
+
+            @Override
+            public void onClick(View v) {
+                System.arraycopy(mHits, 1, mHits, 0, mHits.length - 1);
+                //实现左移，然后最后一个位置更新距离开机的时间，如果最后一个时间和最开始时间小于DURATION，即连续5次点击
+                mHits[mHits.length - 1] = SystemClock.uptimeMillis();
+                if (mHits[0] >= (SystemClock.uptimeMillis() - DURATION)) {
+                    SettingActivity.start(MainActivity.this);
+                }
+            }
+        });
         EventBus.getDefault().register(this);
     }
 
@@ -402,6 +422,13 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
 
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO: add setContentView(...) invocation
+        ButterKnife.bind(this);
+    }
+
     public static class RecyclerItemDecoration extends RecyclerView.ItemDecoration {
         private int itemSpace;
         private int itemNum;
@@ -480,12 +507,12 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
                 refresh();
             }
         });
-        findViewById(R.id.setting).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SettingActivity.start(v.getContext());
-            }
-        });
+//        findViewById(R.id.setting).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                SettingActivity.start(v.getContext());
+//            }
+//        });
     }
 
 

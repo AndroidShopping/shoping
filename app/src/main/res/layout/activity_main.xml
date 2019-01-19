@@ -47,13 +47,13 @@
             android:text="@string/refresh"
             android:textColor="#fff" />
 
-        <Button
-            android:id="@+id/setting"
-            android:background="#fff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:text="@string/setting" />
+        <!--<Button-->
+            <!--android:id="@+id/setting"-->
+            <!--android:background="#fff"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginRight="10dp"-->
+            <!--android:text="@string/setting" />-->
 
     </LinearLayout>
 
