@@ -61,7 +61,7 @@ public class SettingActivity extends AppCompatActivity {
                     return;
                 }
                 String port = etPort.getText().toString();
-                if (PatternUtils.isPort(port)) {
+                if (!PatternUtils.isPort(port)) {
                     ToastUtil.showToast(SettingActivity.this, R.string.port_unvalid);
                     return;
                 }
