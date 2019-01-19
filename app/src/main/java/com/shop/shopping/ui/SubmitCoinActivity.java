@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.shop.shopping.MyPayService;
 import com.shop.shopping.boothprint.util.ToastUtil;
@@ -20,6 +21,7 @@ import com.shop.shopping.entity.PayState;
 import com.shop.shopping.model.ConfirmOrderResult;
 import com.shop.shopping.model.ShopResult;
 import com.shop.shopping.present.ConfirmPresenter;
+import com.shop.shopping.utils.TextUtils;
 import com.shop.shopping.utils.ToastUtils;
 import com.wuhenzhizao.titlebar.widget.CommonTitleBar;
 
@@ -31,6 +33,7 @@ import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 
 import static com.shop.shopping.entity.PayState.PAY_LAST_ERROR;
+import static com.shop.shopping.entity.PayState.PAY_RECEIVE_MONEY;
 
 public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     public static final String RESULT = "result";
@@ -40,6 +43,12 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     CommonTitleBar titlebar;
     @BindView(R.id.submit_view)
     Button submitView;
+    @BindView(R.id.zong_tou_bi_view)
+    TextView zongTouBiView;
+    @BindView(R.id.current_shou_bi_view)
+    TextView currentShouBiView;
+    @BindView(R.id.cancel_view)
+    Button cancelView;
     private ServiceConnection conn;
     private MyPayService myPayService;
     private boolean hasClick = false;
@@ -80,7 +89,11 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
                     break;
                 case PAY_LAST_ERROR:
                     ToastUtil.showToast(submitCoinActivity, R.string.chu_bi_shi_bai);
-
+                case PAY_RECEIVE_MONEY:
+                    submitCoinActivity.currentShouBiView.setText(String.format("%s%s",
+                            submitCoinActivity.getString(R.string.ying_shou_view),
+                            TextUtils.getPriceText((Integer) msg.obj)));
+                    break;
                 default:
                     break;
 
@@ -149,14 +162,18 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
                     return;
                 }
                 hasClick = true;
-                Intent intent = getIntent();
-                ShopResult result = intent.getParcelableExtra(RESULT);
-                payMoneyCount = result.getAllSelectPrice();
                 myPayService.doPayFor(payMoneyCount);
             }
         });
 
-
+        zongTouBiView.setText(String.format("%s%s", getString(R.string.pay_count_number_view), TextUtils.getPriceText(payMoneyCount)));
+        currentShouBiView.setText(String.format("%s%s", getString(R.string.ying_shou_view), TextUtils.getPriceText(0)));
+        cancelView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDialog();
+            }
+        });
     }
 
     @Override
@@ -171,8 +188,11 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         ButterKnife.bind(this);
+        super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
+        ShopResult result = intent.getParcelableExtra(RESULT);
+        payMoneyCount = result.getAllSelectPrice();
         conn = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {

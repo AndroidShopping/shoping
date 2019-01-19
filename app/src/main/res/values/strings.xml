@@ -70,4 +70,6 @@
     <string name="quit">确定需要取消此订单？</string>
     <string name="yes">确定</string>
     <string name="no">取消</string>
+    <string name="pay_count_number_view">需要支付金额：</string>
+    <string name="ying_shou_view">已支付金额：</string>
 </resources>

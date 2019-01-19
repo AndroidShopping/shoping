@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.shop.shopping.entity.PayState.PAY_RECEIVE_MONEY;
+
 public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
@@ -269,6 +271,9 @@ public class MyPayService extends Service implements SerialPortCallback {
                                      * 增加收款额
                                      */
                                     currentReceiveMoney += receiveMoney;
+                                    if (mHandler != null) {
+                                        mHandler.obtainMessage(PAY_RECEIVE_MONEY, currentReceiveMoney).sendToTarget();
+                                    }
                                     if (currentReceiveMoney >= count) {
                                         hasPayCompelete = true;
                                         write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
@@ -317,6 +322,9 @@ public class MyPayService extends Service implements SerialPortCallback {
                                      * 增加收款额
                                      */
                                     currentReceiveMoney += receiveMoney;
+                                    if (mHandler != null) {
+                                        mHandler.obtainMessage(PAY_RECEIVE_MONEY, currentReceiveMoney).sendToTarget();
+                                    }
                                     if (currentReceiveMoney >= count) {
                                         hasPayCompelete = true;
                                         /**

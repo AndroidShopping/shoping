@@ -6,4 +6,5 @@ public interface PayState {
     int PAY_OK = 3;
     int PAY_LAST_ERROR = 4;
     int PAY_CANCEL = 5;
+    int PAY_RECEIVE_MONEY = 6;
 }
