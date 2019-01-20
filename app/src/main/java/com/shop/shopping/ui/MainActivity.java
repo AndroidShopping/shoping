@@ -631,7 +631,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(PrintMsgEvent event) {
         if (event.type == PrinterMsgType.MESSAGE_TOAST) {
-            ToastUtil.showToast(MainActivity.this, event.msg);
+//            ToastUtil.showToast(MainActivity.this, event.msg);
         }
     }
 
