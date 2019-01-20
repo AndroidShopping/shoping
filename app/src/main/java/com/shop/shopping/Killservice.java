@@ -20,7 +20,9 @@ public class Killservice extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        startActivity(new Intent(this, MainActivity.class));
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         stopSelf();
     }
 }

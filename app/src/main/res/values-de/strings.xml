@@ -75,5 +75,6 @@
     <string name="pay_count_number_view">Zu zahlender Betrag:</string>
     <string name="ying_shou_view">Bezahlter Betrag:</string>
     <string name="gou_wu_che_is_empty">Der wagen IST Leer, keine abrechnung</string>
+    <string name="click_on_submit">Ausrüstung IST bereit</string>
 
 </resources>

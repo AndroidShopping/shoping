@@ -161,12 +161,15 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
                     ToastUtil.showToast(SubmitCoinActivity.this, R.string.have_click);
                     return;
                 }
+                ToastUtil.showToast(SubmitCoinActivity.this, R.string.click_on_submit);
                 hasClick = true;
                 myPayService.doPayFor(payMoneyCount);
             }
         });
 
-        zongTouBiView.setText(String.format("%s%s", getString(R.string.pay_count_number_view), TextUtils.getPriceText(payMoneyCount)));
+        Intent intent = getIntent();
+        ShopResult result = intent.getParcelableExtra(RESULT);
+        zongTouBiView.setText(String.format("%s%s", getString(R.string.pay_count_number_view), TextUtils.getPriceText(result.getAllSelectPrice())));
         currentShouBiView.setText(String.format("%s%s", getString(R.string.ying_shou_view), TextUtils.getPriceText(0)));
         cancelView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,8 +191,8 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ButterKnife.bind(this);
         super.onCreate(savedInstanceState);
+        ButterKnife.bind(this);
         Intent intent = getIntent();
         ShopResult result = intent.getParcelableExtra(RESULT);
         payMoneyCount = result.getAllSelectPrice();

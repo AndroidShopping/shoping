@@ -552,7 +552,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         set.setFillAfter(false);
         set.addAnimation(translateAnimationY);
         set.addAnimation(translateAnimationX);
-        set.setDuration(400);// 动画的执行时间
+        set.setDuration((long) (Math.sqrt(endX*endX+endY*endY)/1)/3);// 动画的执行时间
         view.startAnimation(set);
         // 动画监听事件
         set.setAnimationListener(new Animation.AnimationListener() {

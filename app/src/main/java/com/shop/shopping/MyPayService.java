@@ -36,6 +36,8 @@ public class MyPayService extends Service implements SerialPortCallback {
     private static final int WHAT_DO_START_PAY = 2;
     private static CountDownLatch countDownLatch = new CountDownLatch(1);
 
+    private boolean isDebug = true;
+
     private static final int WHAT_ON_ZHI_BI_QI_READ_DATA = 3;
     private static final int WHAT_ON_YING_BI_QI_READ_DATA = 4;
     private static final int WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA = 5;
@@ -67,6 +69,10 @@ public class MyPayService extends Service implements SerialPortCallback {
 
     private volatile Handler mHandler;
     private Handler innerHandler;
+    private ReadThreadCOM readThreadCOM1;
+    private ReadThreadCOM readThreadCOM;
+    private ReadThreadCOM readThreadCOM2;
+    private ReadThreadCOM readThreadCOM3;
 
 
     public int checkDeviceState() {
@@ -77,6 +83,7 @@ public class MyPayService extends Service implements SerialPortCallback {
         return STATE_OK;
 
     }
+
 
     /**
      * 退款接口
@@ -200,10 +207,18 @@ public class MyPayService extends Service implements SerialPortCallback {
                 UsbSerialInterface.STOP_BITS_1,
                 UsbSerialInterface.PARITY_EVEN,
                 UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
-        new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, YING_BI_SHOU_BI_PORT, serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream()).start();
-        new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, ZHI_BI_QI_SHOU_BI_PORT, serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream()).start();
-        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, TUI_BI_QI_5_MAO_PORT, serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream()).start();
-        new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, TUI_BI_QI_2_YUAN_PORT, serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream()).start();
+        readThreadCOM1 = new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, YING_BI_SHOU_BI_PORT,
+                serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream());
+        readThreadCOM1.start();
+        readThreadCOM = new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, ZHI_BI_QI_SHOU_BI_PORT,
+                serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream());
+        readThreadCOM.start();
+        readThreadCOM2 = new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, TUI_BI_QI_5_MAO_PORT,
+                serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream());
+        readThreadCOM2.start();
+        readThreadCOM3 = new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, TUI_BI_QI_2_YUAN_PORT,
+                serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream());
+        readThreadCOM3.start();
         if (writeThread == null) {
             writeThread = new WriteThread();
             writeThread.start();
@@ -301,8 +316,11 @@ public class MyPayService extends Service implements SerialPortCallback {
                     case WHAT_ON_YING_BI_QI_READ_DATA:
                         data = (byte[]) msg.obj;
                         if (data != null) {
-                            Log.d(TAG, "handleMessage:  = " +
-                                    TextUtils.printHexString(data));
+                            if (isDebug) {
+                                Log.d(TAG, "handleMessage:  = " +
+                                        TextUtils.printHexString(data));
+                            }
+
                             if (YingBiQiUtils.isReceiveMoney(data)) {
                                 /**
                                  * 当前收到了硬币
@@ -381,6 +399,7 @@ public class MyPayService extends Service implements SerialPortCallback {
         return Service.START_NOT_STICKY;
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -391,6 +410,20 @@ public class MyPayService extends Service implements SerialPortCallback {
             writeHandler.obtainMessage(WHAT_CLOSE_IO).sendToTarget();
         }
         try {
+
+            if (readThreadCOM != null) {
+                readThreadCOM.setRunAable(false);
+            }
+            if (readThreadCOM1 != null) {
+                readThreadCOM1.setRunAable(false);
+
+            }
+            if (readThreadCOM2 != null) {
+                readThreadCOM2.setRunAable(false);
+            }
+            if (readThreadCOM3 != null) {
+                readThreadCOM3.setRunAable(false);
+            }
             if (serialPorts != null) {
                 for (UsbSerialDevice serialPort : serialPorts) {
                     if (serialPort != null && serialPort.isOpen) {
@@ -446,6 +479,10 @@ public class MyPayService extends Service implements SerialPortCallback {
             whatForReadData = whatRead;
             this.port = port;
 
+        }
+
+        public void setRunAable(boolean isRun) {
+            keep.set(isRun);
         }
 
         @Override
