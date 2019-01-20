@@ -9,30 +9,30 @@
         android:id="@+id/goodsCategoryNameTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginBottom="15dp"
         android:layout_centerVertical="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="15dp"
         android:layout_marginRight="20dp"
+        android:layout_marginBottom="15dp"
         android:text="水果"
-        android:textSize="15sp"
-        android:textColor="#666666"/>
+        android:textColor="#666666"
+        android:textSize="15sp" />
 
     <TextView
         android:id="@+id/shopCartNumTV"
         android:layout_width="14dp"
         android:layout_height="14dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="10dp"
+        android:layout_marginLeft="18dp"
         android:background="@drawable/shopcart_num_bg"
+        android:gravity="center"
         android:padding="2dp"
         android:text="12"
-        android:gravity="center"
-        android:visibility="visible"
         android:textColor="@color/white"
-        android:layout_margin="10dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="18dp"
-        android:textSize="12sp"/>
+        android:textSize="12sp"
+        android:visibility="visible" />
 
 
 </RelativeLayout>

@@ -42,7 +42,7 @@ public class RecycleGoodsCategoryListAdapter extends RecyclerView.Adapter<Recycl
         holder.goodsCategoryName.setText(shopCategory.getName());
         holder.shopCartNum.setText(String.valueOf(shopCategory.getBuyGoodCount()));
         if (shopCategory.getBuyGoodCount() > 0) {
-            holder.shopCartNum.setVisibility(View.VISIBLE);
+            holder.shopCartNum.setVisibility(View.GONE);
         } else {
             holder.shopCartNum.setText("");
             holder.shopCartNum.setVisibility(View.GONE);

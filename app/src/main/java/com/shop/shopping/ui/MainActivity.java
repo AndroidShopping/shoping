@@ -241,7 +241,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         });
         int categoryWidth = DensityUtil.dp2px(MainActivity.this, 200);
         int intervalWidth = DensityUtil.dp2px(MainActivity.this, DEFAULT_ITEM_INTVEL);
-        int spanCount = 1920 - categoryWidth - (SPAN_COUNT - 1) * intervalWidth;
+        int spanCount = 1920 - categoryWidth - (SPAN_COUNT +2) * intervalWidth;
         gridLayoutManager = new StickyHeaderGridLayoutManager(spanCount);
         gridLayoutManager.setSpanSizeLookup(new StickyHeaderGridLayoutManager.SpanSizeLookup() {
             @Override
@@ -455,10 +455,10 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
             super.getItemOffsets(outRect, view, parent, state);
             outRect.bottom = itemSpace;
             outRect.left = itemSpace;
-            if (parent.getChildLayoutPosition(view) % itemNum == 0) {
-                outRect.right = itemSpace;
-            } else {
-            }
+//            if (parent.getChildLayoutPosition(view) % itemNum == 0) {
+//                outRect.right = itemSpace;
+//            } else {
+//            }
         }
 
     }

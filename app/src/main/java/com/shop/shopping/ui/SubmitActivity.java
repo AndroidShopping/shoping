@@ -70,7 +70,7 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         ButterKnife.bind(this);
         goodsRecycleView.setLayoutManager(new LinearLayoutManager(this));
         goodsRecycleView.setAdapter(new MyAdapter());
-        goodsRecycleView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
+//        goodsRecycleView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
         shopResult = getIntent().getParcelableExtra(RESULT);
         String string = TextUtils.getString(R.string.go_pay);
         SpannableStringBuilder builder = new SpannableStringBuilder(string + " ");

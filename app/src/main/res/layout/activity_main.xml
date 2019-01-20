@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#fff"
     android:orientation="vertical">
 
     <com.wuhenzhizao.titlebar.widget.CommonTitleBar
@@ -32,6 +33,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:layout_marginRight="20dp"
             android:background="@drawable/refresh"
             android:drawableLeft="@drawable/refresh_icon"
@@ -56,6 +59,7 @@
             android:id="@+id/refresh_multiple_status_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginRight="10dp"
             app:emptyView="@layout/custom_empty_view"
             app:errorView="@layout/custom_error_view"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
