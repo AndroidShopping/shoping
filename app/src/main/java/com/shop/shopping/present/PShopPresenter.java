@@ -1,5 +1,7 @@
 package com.shop.shopping.present;
 
+import android.util.Log;
+
 import com.shop.shopping.model.ShopCategory;
 import com.shop.shopping.model.ShopItem;
 import com.shop.shopping.model.ShopResult;
@@ -26,6 +28,12 @@ public class PShopPresenter extends XPresent<MainActivity> {
                     @Override
                     protected void onFail(NetError error) {
                         getV().showError(error);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        super.onError(e);
+                        Log.e("PShopPresenter", "onError: " + e.getMessage());
                     }
 
                     @Override

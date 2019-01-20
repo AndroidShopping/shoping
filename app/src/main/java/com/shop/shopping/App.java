@@ -33,7 +33,7 @@ public class App extends Application {
                 .setSupportDP(true)
                 .setSupportSP(true)
                 .setSupportSubunits(Subunits.MM);
-        startService(new Intent(getApplicationContext(), MyPayService.class));
+//        startService(new Intent(getApplicationContext(), MyPayService.class));
         AppInfo.init(getApplicationContext());
         context = this;
         XApi.registerProvider(new NetProvider() {
