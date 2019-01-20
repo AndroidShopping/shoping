@@ -184,52 +184,77 @@ public class MyPayService extends Service implements SerialPortCallback {
         } else {
             hasInit = true;
         }
-        configUsbDevice(serialPorts.get(YING_BI_SHOU_BI_PORT), 19200,
-                UsbSerialInterface.DATA_BITS_8,
-                UsbSerialInterface.STOP_BITS_1,
-                UsbSerialInterface.PARITY_NONE,
-                UsbSerialInterface.FLOW_CONTROL_OFF, YING_BI_SHOU_BI_PORT);
-        configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600,
-                UsbSerialInterface.DATA_BITS_8,
-                UsbSerialInterface.STOP_BITS_1,
-                UsbSerialInterface.PARITY_EVEN,
-                UsbSerialInterface.FLOW_CONTROL_OFF, ZHI_BI_QI_SHOU_BI_PORT);
-//
-        configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT),
-
-                9600,
-                UsbSerialInterface.DATA_BITS_8,
-                UsbSerialInterface.STOP_BITS_1,
-                UsbSerialInterface.PARITY_EVEN,
-                UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_5_MAO_PORT);
-        configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600,
-                UsbSerialInterface.DATA_BITS_8,
-                UsbSerialInterface.STOP_BITS_1,
-                UsbSerialInterface.PARITY_EVEN,
-                UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
-        readThreadCOM1 = new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, YING_BI_SHOU_BI_PORT,
-                serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream());
-        readThreadCOM1.start();
-        readThreadCOM = new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, ZHI_BI_QI_SHOU_BI_PORT,
-                serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream());
-        readThreadCOM.start();
-        readThreadCOM2 = new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, TUI_BI_QI_5_MAO_PORT,
-                serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream());
-        readThreadCOM2.start();
-        readThreadCOM3 = new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, TUI_BI_QI_2_YUAN_PORT,
-                serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream());
-        readThreadCOM3.start();
-        if (writeThread == null) {
-            writeThread = new WriteThread();
-            writeThread.start();
-        }
         try {
-            countDownLatch.await();
-            doResetShouBiqi();
-        } catch (InterruptedException e) {
+
+
+            configUsbDevice(serialPorts.get(YING_BI_SHOU_BI_PORT), 19200,
+                    UsbSerialInterface.DATA_BITS_8,
+                    UsbSerialInterface.STOP_BITS_1,
+                    UsbSerialInterface.PARITY_NONE,
+                    UsbSerialInterface.FLOW_CONTROL_OFF, YING_BI_SHOU_BI_PORT);
+            configUsbDevice(serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT), 9600,
+                    UsbSerialInterface.DATA_BITS_8,
+                    UsbSerialInterface.STOP_BITS_1,
+                    UsbSerialInterface.PARITY_EVEN,
+                    UsbSerialInterface.FLOW_CONTROL_OFF, ZHI_BI_QI_SHOU_BI_PORT);
+//
+            configUsbDevice(serialPorts.get(TUI_BI_QI_5_MAO_PORT),
+
+                    9600,
+                    UsbSerialInterface.DATA_BITS_8,
+                    UsbSerialInterface.STOP_BITS_1,
+                    UsbSerialInterface.PARITY_EVEN,
+                    UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_5_MAO_PORT);
+            configUsbDevice(serialPorts.get(TUI_BI_QI_2_YUAN_PORT), 9600,
+                    UsbSerialInterface.DATA_BITS_8,
+                    UsbSerialInterface.STOP_BITS_1,
+                    UsbSerialInterface.PARITY_EVEN,
+                    UsbSerialInterface.FLOW_CONTROL_OFF, TUI_BI_QI_2_YUAN_PORT);
+
+
+            if (readThreadCOM1 == null) {
+                readThreadCOM1 = new ReadThreadCOM(WHAT_ON_YING_BI_QI_READ_DATA, YING_BI_SHOU_BI_PORT,
+                        serialPorts.get(YING_BI_SHOU_BI_PORT).getInputStream());
+                readThreadCOM1.start();
+            }
+
+
+            if (readThreadCOM == null) {
+                readThreadCOM = new ReadThreadCOM(WHAT_ON_ZHI_BI_QI_READ_DATA, ZHI_BI_QI_SHOU_BI_PORT,
+                        serialPorts.get(ZHI_BI_QI_SHOU_BI_PORT).getInputStream());
+                readThreadCOM.start();
+
+            }
+
+            if (readThreadCOM2 == null) {
+                readThreadCOM2 = new ReadThreadCOM(WHAT_ON_TUI_BI_QI_5_MAO_READ_DATA, TUI_BI_QI_5_MAO_PORT,
+                        serialPorts.get(TUI_BI_QI_5_MAO_PORT).getInputStream());
+                readThreadCOM2.start();
+
+            }
+
+            if (readThreadCOM3 == null) {
+                readThreadCOM3 = new ReadThreadCOM(WHAT_ON_TUI_BI_QI_2_YUAN_READ_DATA, TUI_BI_QI_2_YUAN_PORT,
+                        serialPorts.get(TUI_BI_QI_2_YUAN_PORT).getInputStream());
+                readThreadCOM3.start();
+
+            }
+
+
+            if (writeThread == null) {
+                writeThread = new WriteThread();
+                writeThread.start();
+                try {
+                    countDownLatch.await();
+                    doResetShouBiqi();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 

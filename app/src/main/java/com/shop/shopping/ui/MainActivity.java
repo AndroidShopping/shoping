@@ -543,7 +543,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         int[] endLocation = new int[2];// 存储动画结束位置的X、Y坐标
         shopCartNum.getLocationInWindow(endLocation);
         // 计算位移
-        int endX = 0 - startLocation[0] + 40;// 动画位移的X坐标
+        int endX = 0 - startLocation[0] + DensityUtil.dp2px(getBaseContext(), 230);// 动画位移的X坐标
         int endY = endLocation[1] - startLocation[1];// 动画位移的y坐标
 
         TranslateAnimation translateAnimationX = new TranslateAnimation(0, endX, 0, 0);

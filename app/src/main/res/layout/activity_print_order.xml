@@ -15,9 +15,8 @@
         android:layout_height="wrap_content"
         app:centerText="@string/print_order"
         app:centerType="textView"
-        app:leftDrawable="@drawable/comm_titlebar_back_normal"
         app:leftDrawablePadding="0dp"
-        app:leftText="@string/back"
+        app:leftText=""
         app:leftType="textView" />
 
     <TextView

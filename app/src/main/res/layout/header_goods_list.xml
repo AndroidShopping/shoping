@@ -20,7 +20,8 @@
         android:padding="10dp"
         android:textAppearance="?android:textAppearanceMedium"
         android:textColor="#ffdddddd"
-        android:textSize="10sp" />
+        android:textSize="17sp"
+        android:textStyle="bold" />
 
     <View
 

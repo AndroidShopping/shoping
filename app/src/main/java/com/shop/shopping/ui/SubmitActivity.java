@@ -39,6 +39,8 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
     @BindView(R.id.submit_view)
     Button submitView;
     ShopResult shopResult;
+    @BindView(R.id.cancel_view)
+    Button cancelView;
 
     public static void start(Context context, ShopResult result) {
         Intent intent = new Intent(context, SubmitActivity.class);
@@ -83,6 +85,12 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
                 ((SubmitPresenter) getP()).createPrevieOrder(shopResult.getAllSelectPrice(), shopResult.getSelectedItem());
             }
         });
+        cancelView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         final CommonTitleBar titleBar = (CommonTitleBar) findViewById(R.id.titlebar);
         titleBar.setListener(new CommonTitleBar.OnTitleBarListener() {
@@ -104,6 +112,13 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
     @Override
     public SubmitPresenter newP() {
         return new SubmitPresenter();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO: add setContentView(...) invocation
+        ButterKnife.bind(this);
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -136,7 +151,7 @@ public class SubmitActivity extends BaseAcivity<SubmitPresenter> {
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
             final ShopItem item = shopResult.getItem(position);
-            ILoader.Options options = new ILoader.Options(R.drawable.loading, R.drawable.loading_error);
+            ILoader.Options options = new ILoader.Options(R.drawable.not_pic, R.drawable.not_pic);
             ILFactory.getLoader().loadNet(holder.goodPicView, item.getPicPath(), options);
             holder.allPriceView.setText(item.formatAllCost());
             holder.countView.setText("X" + item.getBuyCount());
