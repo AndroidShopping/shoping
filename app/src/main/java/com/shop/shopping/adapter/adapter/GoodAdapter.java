@@ -11,14 +11,15 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import cn.droidlover.xdroidmvp.imageloader.ILFactory;
-import cn.droidlover.xdroidmvp.imageloader.ILoader;
-import cn.droidlover.xdroidmvp.shopping.R;
 import com.shop.shopping.model.ShopItem;
 import com.shop.shopping.model.ShopResult;
 import com.shop.shopping.stickyheadergrid.StickyHeaderGridAdapter;
 import com.shop.shopping.ui.MainActivity;
 import com.shop.shopping.utils.TextUtils;
+
+import cn.droidlover.xdroidmvp.imageloader.ILFactory;
+import cn.droidlover.xdroidmvp.imageloader.ILoader;
+import cn.droidlover.xdroidmvp.shopping.R;
 
 public class GoodAdapter extends StickyHeaderGridAdapter {
 
@@ -117,8 +118,9 @@ public class GoodAdapter extends StickyHeaderGridAdapter {
         //设置价格
         holder.tvGoodsPrice.setText(TextUtils.getPriceText(shopItem.getPrice()));
 
-        ILoader.Options options = new ILoader.Options(R.drawable.loading, R.drawable.loading_error);
+        ILoader.Options options = new ILoader.Options(R.drawable.not_pic, R.drawable.not_pic);
         ILFactory.getLoader().loadNet(holder.ivGoodsImage, shopItem.getPicPath(), options);
+
 
         //通过判别对应位置的数量是否大于0来显示隐藏数量
         isSelected(shopItem.getBuyCount(), holder);

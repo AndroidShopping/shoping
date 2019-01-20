@@ -54,6 +54,7 @@ import cn.droidlover.xdroidmvp.net.NetError;
 import cn.droidlover.xdroidmvp.shopping.R;
 
 public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInterface {
+    public static final int SPAN_COUNT = 4;
     int PERMISSION_REQUEST_COARSE_LOCATION = 2;
 
     public BluetoothAdapter mAdapter;
@@ -238,7 +239,16 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
                 setChecked(position, true);
             }
         });
-        gridLayoutManager = new StickyHeaderGridLayoutManager(2);
+        int categoryWidth = DensityUtil.dp2px(MainActivity.this, 200);
+        int intervalWidth = DensityUtil.dp2px(MainActivity.this, DEFAULT_ITEM_INTVEL);
+        int spanCount = 1920 - categoryWidth - (SPAN_COUNT - 1) * intervalWidth;
+        gridLayoutManager = new StickyHeaderGridLayoutManager(spanCount);
+        gridLayoutManager.setSpanSizeLookup(new StickyHeaderGridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int section, int position) {
+                return spanCount / 4;
+            }
+        });
         gridLayoutManager.setHeaderStateChangeListener(new StickyHeaderGridLayoutManager.HeaderStateChangeListener() {
             @Override
             public void onHeaderStateChanged(int section, View headerView, StickyHeaderGridLayoutManager.HeaderState state, int pushOffset) {
@@ -249,7 +259,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
             }
         });
         recyclerView.setLayoutManager(gridLayoutManager);
-        recyclerView.addItemDecoration(new RecyclerItemDecoration(DensityUtil.dp2px(this, DEFAULT_ITEM_INTVEL), 2));
+        recyclerView.addItemDecoration(new RecyclerItemDecoration(DensityUtil.dp2px(this, DEFAULT_ITEM_INTVEL), SPAN_COUNT));
         goodAdapter = new GoodAdapter(this, null);
         recyclerView.setAdapter(goodAdapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -550,7 +560,7 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
         set.setFillAfter(false);
         set.addAnimation(translateAnimationY);
         set.addAnimation(translateAnimationX);
-        set.setDuration((long) (Math.sqrt(endX*endX+endY*endY)/1)/3);// 动画的执行时间
+        set.setDuration((long) (Math.sqrt(endX * endX + endY * endY) / 1) / 3);// 动画的执行时间
         view.startAnimation(set);
         // 动画监听事件
         set.setAnimationListener(new Animation.AnimationListener() {

@@ -18,8 +18,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="42dp"
-        android:gravity="center_vertical"
+        android:layout_height="wrap_content"
         android:background="#fff"
         android:orientation="horizontal">
 
@@ -30,6 +29,7 @@
 
         <TextView
             android:id="@+id/refresh_view"
+            android:layout_gravity="center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
@@ -42,14 +42,6 @@
             android:paddingBottom="5dp"
             android:text="@string/refresh"
             android:textColor="#fff" />
-
-        <!--<Button-->
-            <!--android:id="@+id/setting"-->
-            <!--android:background="#fff"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginRight="10dp"-->
-            <!--android:text="@string/setting" />-->
 
     </LinearLayout>
 
@@ -74,15 +66,13 @@
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
                 android:orientation="horizontal">
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/goods_category_list"
-                    android:layout_width="80dp"
+                    android:layout_width="200dp"
                     android:layout_height="match_parent"
-                    android:dividerHeight="0dp"
-                    android:visibility="visible" />
+                     />
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/goods_recycleView"
