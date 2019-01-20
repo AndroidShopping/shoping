@@ -16,7 +16,7 @@ public class YingBiQiUtils {
         if (moneyIndex == 2) {
             return 100;
         }
-        if (moneyIndex == 3) {
+        if (moneyIndex == 4) {
             return 200;
         }
         return 0;
