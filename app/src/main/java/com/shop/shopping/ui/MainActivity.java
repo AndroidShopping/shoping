@@ -58,8 +58,6 @@ public class MainActivity extends BaseAcivity<PShopPresenter> implements BtInter
 
     public BluetoothAdapter mAdapter;
     public boolean mBtEnable;
-    @BindView(R.id.main_picture_view)
-    ImageView mainPictureView;
     @BindView(R.id.refresh_view)
     TextView refreshView;
     @BindView(R.id.container)
