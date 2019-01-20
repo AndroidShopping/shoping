@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -13,14 +14,15 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.lang.reflect.Method;
-
-import cn.droidlover.xdroidmvp.shopping.R;
 import com.shop.shopping.boothprint.bt.BluetoothActivity;
 import com.shop.shopping.boothprint.bt.BtUtil;
 import com.shop.shopping.boothprint.print.PrintQueue;
 import com.shop.shopping.boothprint.print.PrintUtil;
 import com.shop.shopping.boothprint.util.ToastUtil;
+
+import java.lang.reflect.Method;
+
+import cn.droidlover.xdroidmvp.shopping.R;
 
 /**
  * 蓝牙搜索界面
@@ -38,6 +40,7 @@ public class SearchBluetoothActivity extends BluetoothActivity implements Adapte
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_searchbooth);
         lv_searchblt = (ListView) findViewById(R.id.lv_searchblt);
         tv_title = (TextView) findViewById(R.id.tv_title);

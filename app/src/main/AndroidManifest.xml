@@ -59,8 +59,7 @@
 
         <service
             android:name="com.shop.shopping.MyPayService"
-            android:exported="false"
-            >
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -74,6 +73,10 @@
             android:enabled="true"
             android:exported="true"
             android:process=":remote"></service>
+
+        <meta-data
+            android:name="com.shop.shopping.GlideConfig"
+            android:value="GlideModule" />
     </application>
 
 </manifest>
