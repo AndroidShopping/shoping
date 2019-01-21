@@ -52,7 +52,7 @@ public class SubmitCoinActivity extends BaseAcivity<ConfirmPresenter> {
     private ServiceConnection conn;
     private MyPayService myPayService;
     private boolean hasClick = false;
-    private int payMoneyCount;
+    private int payMoneyCount=0;
     private int haveReceive = 0;
     private int haveTuiBi = 0;
     /**

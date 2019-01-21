@@ -326,6 +326,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                                     }
                                     if (currentReceiveMoney >= count) {
                                         hasPayCompelete = true;
+
                                         write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
                                         doResetShouBiqi();
                                         if (currentReceiveMoney > count) {
@@ -338,6 +339,7 @@ public class MyPayService extends Service implements SerialPortCallback {
                                             mHandler.obtainMessage(PayState.PAY_OK, currentReceiveMoney,
                                                     currentReceiveMoney - count).sendToTarget();
                                         }
+                                        currentReceiveMoney = 0;
 
                                     } else {
 
@@ -392,10 +394,12 @@ public class MyPayService extends Service implements SerialPortCallback {
                                              */
                                             doPayOut(currentReceiveMoney - count);
                                         }
+
                                         if (mHandler != null) {
                                             mHandler.obtainMessage(PayState.PAY_OK, currentReceiveMoney,
                                                     currentReceiveMoney - count).sendToTarget();
                                         }
+                                        currentReceiveMoney = 0;
 
                                     } else {
 //                                        write(new byte[]{0x02}, ZHI_BI_QI_SHOU_BI_PORT);
