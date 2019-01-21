@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cn.droidlover.xdroidmvp.shopping.BuildConfig;
+
 
 /**
  * Created by liuguirong on 8/1/17.
@@ -20,7 +22,7 @@ import java.util.ArrayList;
 public abstract class PrinterWriter {
 
     public static final int HEIGHT_PARTING_DEFAULT = 255;
-    private static final String CHARSET = "gb2312";
+    private static final String CHARSET = BuildConfig.PRINT_CHARSET;
     private ByteArrayOutputStream bos;
     private int heightParting;
 

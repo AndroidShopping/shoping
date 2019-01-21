@@ -2,14 +2,20 @@ package com.shop.shopping.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Process;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.shop.shopping.App;
 import com.shop.shopping.Killservice;
+import com.shop.shopping.MyPayService;
 import com.shop.shopping.boothprint.util.ToastUtil;
 import com.shop.shopping.model.Keys;
 import com.shop.shopping.utils.PatternUtils;
@@ -33,7 +39,7 @@ public class SettingActivity extends AppCompatActivity {
     @BindView(R.id.et_port)
     EditText etPort;
     @BindView(R.id.ok_view)
-    TextView okView;
+    View okView;
 
     public static void start(Context context) {
         Intent starter = new Intent(context, SettingActivity.class);
@@ -42,6 +48,13 @@ public class SettingActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //全屏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
         ButterKnife.bind(this);
@@ -79,7 +92,9 @@ public class SettingActivity extends AppCompatActivity {
                 SharedPref.getInstance(App.getContext()).putString(Keys.IP, ip);
                 SharedPref.getInstance(App.getContext()).putString(Keys.PORT, port);
                 startService(new Intent(SettingActivity.this, Killservice.class));
-                Runtime.getRuntime().exit(0);
+//                Runtime.getRuntime().exit(0);
+                sendBroadcast(new Intent(MyPayService.KILL_PROCESS));
+                Process.killProcess(Process.myPid());
 
             }
         });

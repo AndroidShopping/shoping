@@ -2,8 +2,10 @@ package com.shop.shopping;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,6 +36,7 @@ public class MyPayService extends Service implements SerialPortCallback {
     public static final int WHAT_WRITE_DATA = 0;
     public static final int WHAT_CLOSE_IO = 1;
     private static final int WHAT_DO_START_PAY = 2;
+    public static final String KILL_PROCESS = "KILL_PROCESS";
     private static CountDownLatch countDownLatch = new CountDownLatch(1);
 
     private boolean isDebug = true;
@@ -262,6 +265,13 @@ public class MyPayService extends Service implements SerialPortCallback {
     @Override
     public void onCreate() {
         this.context = this;
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                stopSelf();
+
+            }
+        }, new IntentFilter(KILL_PROCESS));
         MyPayService.SERVICE_CONNECTED = true;
         innerHandler = new Handler() {
             int count = 0;

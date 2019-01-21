@@ -69,7 +69,7 @@
             android:textColor="#ff000000"
             android:textSize="15sp" />
 
-        <TextView
+        <Button
             android:id="@+id/ok_view"
             android:layout_width="327dp"
             android:layout_height="49dp"

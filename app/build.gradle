@@ -47,13 +47,15 @@ android {
         abortOnError false
     }
     productFlavors {
-        dev {
+        zhong_guo {
             buildConfigField("String", "URL", "\"${rootProject.ext.url.rap}\"")
+            buildConfigField("String", "PRINT_CHARSET", "\"gb2312\"")
             dimension "channel"
         }
-        rap2 {
+        de_guo {
             buildConfigField("String", "URL", "\"${rootProject.ext.url.rap}\"")
             dimension "channel"
+            buildConfigField("String", "PRINT_CHARSET", "\"gb2312\"")
         }
     }
     compileOptions {
