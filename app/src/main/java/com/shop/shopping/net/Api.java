@@ -20,4 +20,8 @@ public class Api {
         }
         return shopService;
     }
+
+    public static void resetShopService() {
+        shopService = null;
+    }
 }

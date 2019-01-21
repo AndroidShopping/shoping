@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Process;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
@@ -14,8 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.shop.shopping.App;
-import com.shop.shopping.Killservice;
-import com.shop.shopping.MyPayService;
 import com.shop.shopping.boothprint.util.ToastUtil;
 import com.shop.shopping.model.Keys;
 import com.shop.shopping.utils.PatternUtils;
@@ -25,6 +22,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.droidlover.xdroidmvp.cache.SharedPref;
 import cn.droidlover.xdroidmvp.shopping.R;
+
+import static com.shop.shopping.net.Api.resetShopService;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -91,10 +90,14 @@ public class SettingActivity extends AppCompatActivity {
                 }
                 SharedPref.getInstance(App.getContext()).putString(Keys.IP, ip);
                 SharedPref.getInstance(App.getContext()).putString(Keys.PORT, port);
-                startService(new Intent(SettingActivity.this, Killservice.class));
-//                Runtime.getRuntime().exit(0);
-                sendBroadcast(new Intent(MyPayService.KILL_PROCESS));
-                Process.killProcess(Process.myPid());
+
+                resetShopService();
+                finish();
+                MainActivity.start(SettingActivity.this);
+//                startService(new Intent(SettingActivity.this, Killservice.class));
+////                Runtime.getRuntime().exit(0);
+//                sendBroadcast(new Intent(MyPayService.KILL_PROCESS));
+//                Process.killProcess(Process.myPid());
 
             }
         });

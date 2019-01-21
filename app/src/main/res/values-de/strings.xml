@@ -57,10 +57,10 @@
     <string name="order_id_data">Bestellung. :</string>
     <string name="order_state">Status der bestellung: erledigt</string>
     <string name="prodcut">produkte</string>
-    <string name="product_dan_jia">Zahl, pro preis</string>
+    <string name="product_dan_jia">ANZAHL * Preis</string>
     <string name="count">Von</string>
     <string name="jian_shu">Bitte geben sie mir eine zahl:</string>
-    <string name="ying_fu">Wie ich mein geld zahle </string>
+    <string name="ying_fu">Wie ich mein geld zahle： </string>
     <string name="shi_shou_jin_e">Bei absichtlichem geld:</string>
     <string name="zhao_ling">Wechselgeld:</string>
     <string name="xie_xie_again">Vielen dank, dass sie wieder da sind.</string>

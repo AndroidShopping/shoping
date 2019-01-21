@@ -63,7 +63,7 @@ public class PrintOrderDataMaker implements PrintDataMaker {
             printer.printLineFeed();
             printer.setAlignCenter();
             printer.setEmphasizedOn();
-            printer.setFontSize(1);
+            printer.setFontSize(0);
             printer.print(TextUtils.getString(R.string.welcome_to_this));
             printer.printLineFeed();
             printer.setEmphasizedOff();
@@ -129,6 +129,7 @@ public class PrintOrderDataMaker implements PrintDataMaker {
             printer.printLine();
             printer.setAlignCenter();
             printer.print(TextUtils.getString(R.string.xie_xie_again));
+            printer.printLineFeed();
             printer.printLineFeed();
             printer.printLineFeed();
             printer.feedPaperCut();
