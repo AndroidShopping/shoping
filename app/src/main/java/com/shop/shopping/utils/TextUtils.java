@@ -1,10 +1,10 @@
 package com.shop.shopping.utils;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.StringRes;
 
 import com.shop.shopping.App;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 import cn.droidlover.xdroidmvp.shopping.R;
@@ -18,29 +18,6 @@ public final class TextUtils {
         return App.getContext().getString(id);
     }
 
-    public static BigDecimal moneyFen2Yuan(String fen) {
-        return formatYuan(new BigDecimal(fen).divide(new BigDecimal("100")));
-    }
-
-    public static BigDecimal moneyYuan2Fen(BigDecimal yuan) {
-        return yuan == null ? null : formatFen(yuan.multiply(new BigDecimal("100")));
-    }
-
-    public static String moneyFen2YuanStr(BigDecimal fen) {
-        return fen == null ? null : NF_YUAN.format(moneyFen2Yuan(fen.toString()));
-    }
-
-    public static String moneyYuan2FenStr(BigDecimal yuan) {
-        return yuan == null ? null : NF_FEN.format(yuan.multiply(new BigDecimal("100")));
-    }
-
-    public static BigDecimal formatYuan(BigDecimal yuan) {
-        return yuan == null ? null : new BigDecimal(NF_YUAN.format(yuan));
-    }
-
-    public static BigDecimal formatFen(BigDecimal fen) {
-        return fen == null ? null : new BigDecimal(NF_FEN.format(fen));
-    }
 
     public static boolean isEmpty(String s) {
         if (s == null || s.trim().isEmpty()) {
@@ -49,9 +26,19 @@ public final class TextUtils {
         return false;
     }
 
+    @SuppressLint("DefaultLocale")
     public static String getPriceText(int price) {
 
-        return getString(R.string.mark) + moneyFen2Yuan("" + price).toString();
+        try {
+
+            int yuan = price / 100;
+            int fen = price - yuan * 100;
+            return getString(R.string.mark) + String.format("%d.%02d", yuan, fen);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+
     }
 
 
